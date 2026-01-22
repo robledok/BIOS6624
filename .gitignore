@@ -43,3 +43,4 @@ vignettes/*.pdf
 DataRaw/*
 DataProcessed/*
 !*/ReadMe.md
+*.DS_Store
