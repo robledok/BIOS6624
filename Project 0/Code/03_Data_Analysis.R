@@ -82,3 +82,100 @@ dat_rq2 %>%
   tbl_summary(by = time_group,
               include = adherence,
               label = list(adherence = "Adherence Group"))
+
+##*******************************************************************
+## ------------------ RQ 3  ----------------------
+##*******************************************************************
+##
+
+## Creating variable for before 30 mins and after based on booklet time
+dat_rq3 <- dat_p0 %>%
+  filter(!is.na(calc_book_int)) %>%
+  mutate(
+    pre_30mins = ifelse(calc_book_int < 30, calc_book_int, 30),
+    post_30mins = ifelse(calc_book_int >= 30, calc_book_int - 30, 0)
+  )
+
+## Seeing if outcomes need log-transformed
+hist(dat_rq3$Cortisol..nmol.L.)
+hist(dat_rq3$DHEA..nmol.L.)
+
+hist(log(dat_rq3$Cortisol..nmol.L.))
+hist(log(dat_rq3$DHEA..nmol.L.))
+
+## Fitting cortisol model
+m1_rq3 <- lmer(log(Cortisol..nmol.L.) ~ pre_30mins + post_30mins + (1 | SubjectID),
+                REML = TRUE, data = dat_rq3)
+summary(m1_rq3)
+confint(m1_rq3)
+
+## Checking QQ-plot and residuals
+qqnorm(resid(m1_rq3))
+qqline(resid(m1_rq3))
+
+ggplot(dat_rq3, aes(x = fitted(m1_rq3), y = resid(m1_rq3))) +
+  geom_point(color = "cornflowerblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  labs(
+    x = "Fitted values",
+    y = "Residuals",
+    title = "Fitted vs. Residuals"
+  )
+
+
+## Fitting DHEA model
+m2_rq3 <- lmer(log(DHEA..nmol.L.) ~ pre_30mins + post_30mins + (1 | SubjectID),
+               REML = TRUE, data = dat_rq3)
+summary(m2_rq3)
+confint(m2_rq3)
+
+## Checking QQ-plot and residuals
+qqnorm(resid(m2_rq3))
+qqline(resid(m2_rq3))
+
+ggplot(dat_rq3, aes(x = fitted(m2_rq3), y = resid(m2_rq3))) +
+  geom_point(color = "cornflowerblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  labs(
+    x = "Fitted values",
+    y = "Residuals",
+    title = "Fitted vs. Residuals"
+  )
+
+## Fitted vs predicted cortisol:
+dat_cort_pred <- expand.grid(
+  minutes = seq(min(dat_rq3$calc_book_int), max(dat_rq3$calc_book_int), by = 5)
+)
+dat_cort_pred <- dat_cort_pred %>%
+  mutate(
+    pre_30mins = ifelse(minutes < 30, minutes, 30),
+    post_30mins = ifelse(minutes >= 30, minutes - 30, 0)
+  )
+dat_cort_pred$fitted <- predict(m1_rq3, newdata = dat_cort_pred,
+                               re.form = NA)
+ggplot(data = dat_cort_pred, aes(x = minutes, y = exp(fitted))) +
+  geom_line(linewidth = 1, col = 'skyblue2') +
+  theme_bw() +
+  labs(x = "Time Since Waking (Minutes)",
+       y = "Cortisol (nmol/L)",
+       title = "Estimated Means of Cortisol Over Time") 
+
+## Fitted vs predicted DHEA:
+dat_dhea_pred <- expand.grid(
+  minutes = seq(min(dat_rq3$calc_book_int), max(dat_rq3$calc_book_int), by = 5)
+)
+dat_dhea_pred <- dat_dhea_pred %>%
+  mutate(
+    pre_30mins = ifelse(minutes < 30, minutes, 30),
+    post_30mins = ifelse(minutes >= 30, minutes - 30, 0)
+  )
+dat_dhea_pred$fitted <- predict(m2_rq3, newdata = dat_dhea_pred,
+                                re.form = NA)
+ggplot(data = dat_dhea_pred, aes(x = minutes, y = exp(fitted))) +
+  geom_line(linewidth = 1, col = 'palevioletred2') +
+  theme_bw() +
+  labs(x = "Time Since Waking (Minutes)",
+       y = "DHEA (nmol/L)",
+       title = "Estimated Means of DHEA Over Time") 
