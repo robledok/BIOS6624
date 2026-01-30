@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggplot2)
 library(lme4)
 library(lmerTest)
+library(gtsummary)
 
 ## Reading in the data
 dat_p0 <- read.csv("DataProcessed/dat_p0_clean_kr.csv")
@@ -46,3 +47,38 @@ confint(m1_rq1)
 ## Checking QQ-plot and residuals
 qqnorm(resid(m1_rq1))
 qqline(resid(m1_rq1))
+
+##*******************************************************************
+## ------------------ RQ 2  ----------------------
+##*******************************************************************
+##
+
+## Creating groups based on for booklet time at 30 mins and 600 mins:
+## Good adherence: +/- 7.5 minutes
+## Adequate adherence: +/- 15 minutes
+dat_rq2 <- dat_p0 %>%
+  filter(Collection.Sample == 2 | Collection.Sample == 4) %>%
+  mutate(
+    adherence = case_when(
+      abs(calc_book_int - 30)  <= 7.5 | abs(calc_book_int - 600) <= 7.5  ~ "Good adherence",
+      abs(calc_book_int - 30)  <= 15  | abs(calc_book_int - 600) <= 15   ~ "Adequate adherence",
+      TRUE                                                              ~ "Poor adherence"
+    ),
+    time_group = case_when(
+      Collection.Sample == 2 ~ "30 Minutes",
+      Collection.Sample == 4 ~ "10 Hours"
+    )
+  )
+dat_rq2$adherence <- relevel(factor(dat_rq2$adherence), ref = "Good adherence")
+dat_rq2$time_group <- relevel(factor(dat_rq2$time_group), ref = "30 Minutes")
+
+## Creating table with proportions based on all observations
+dat_rq2 %>%
+  tbl_summary(include = adherence,
+              label = list(adherence = "Adherence Group"))
+
+## Creating table with proportions based on all observations stratified by time
+dat_rq2 %>%
+  tbl_summary(by = time_group,
+              include = adherence,
+              label = list(adherence = "Adherence Group"))
