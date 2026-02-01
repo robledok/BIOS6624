@@ -1,5 +1,5 @@
 **Project Name**: BIOS 6624  
-**PI**: Kayla Robledo  
+**PI**: BIOS 6624 Professors  
 **Analyst**: Kayla Robledo  
 
 Details about the sub-folders in each project:
