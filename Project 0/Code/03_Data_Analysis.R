@@ -25,12 +25,34 @@ m1_rq1 <- lmer(calc_mems_int ~ calc_book_int + (1|SubjectID),
 ## Looking at model output
 summary(m1_rq1)
 
-## Fitted vs predicted
+## Fitted vs predicted conditional:
 dat_rq1$m1_predict <- predict(m1_rq1)
 ggplot(dat_rq1) +
   geom_point(aes(x = calc_book_int, y = calc_mems_int, color = "Observed"), alpha = 0.5) +
   geom_abline(aes(intercept = 0, slope = 1, color = "Ideal"), linewidth = 0.8) +
   geom_line(aes(x = calc_book_int, y = m1_predict, color = "Predicted"), linetype = "dashed", linewidth = 1) +
+  scale_color_manual(name = "Legend",
+                     values = c("Observed" = "black",
+                                "Ideal" = "lightskyblue",
+                                "Predicted" = "red")) +
+  theme_bw() +
+  xlab("Booklet Minutes Since Waking") +
+  ylab("Cap Minutes Since Waking") +
+  ggtitle("Cap Time vs. Booklet Time") +
+  theme(legend.position = "bottom")
+
+## Fitted vs predicted marginal:
+dat_rq1_pred <- expand.grid(
+  calc_book_int = seq(min(dat_rq1$calc_book_int), max(dat_rq1$calc_book_int), by = 5)
+)
+dat_rq1_pred$fitted <- predict(m1_rq1, newdata = dat_rq1_pred,
+                                re.form = NA)
+ggplot() +
+  geom_point(aes(x = calc_book_int, y = calc_mems_int, color = "Observed"), 
+             alpha = 0.5, data = dat_rq1) +
+  geom_abline(aes(intercept = 0, slope = 1, color = "Ideal"), linewidth = 0.8) +
+  geom_line(aes(x = calc_book_int, y = fitted, color = "Predicted"), 
+            linetype = "dashed", linewidth = 1, data = dat_rq1_pred) +
   scale_color_manual(name = "Legend",
                      values = c("Observed" = "black",
                                 "Ideal" = "lightskyblue",
