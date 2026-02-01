@@ -25,6 +25,9 @@ m1_rq1 <- lmer(calc_mems_int ~ calc_book_int + (1|SubjectID),
 ## Looking at model output
 summary(m1_rq1)
 
+## Calculating confidence intervals
+confint(m1_rq1)
+
 ## Fitted vs predicted conditional:
 dat_rq1$m1_predict <- predict(m1_rq1)
 ggplot(dat_rq1) +
@@ -63,12 +66,19 @@ ggplot() +
   ggtitle("Cap Time vs. Booklet Time") +
   theme(legend.position = "bottom")
 
-## Calculating confidence intervals
-confint(m1_rq1)
-
 ## Checking QQ-plot and residuals
 qqnorm(resid(m1_rq1))
 qqline(resid(m1_rq1))
+
+ggplot(dat_rq1, aes(x = fitted(m1_rq1), y = resid(m1_rq1))) +
+  geom_point(color = "cornflowerblue") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  labs(
+    x = "Fitted values",
+    y = "Residuals",
+    title = "Fitted vs. Residuals"
+  )
 
 ##*******************************************************************
 ## ------------------ RQ 2  ----------------------
