@@ -9,6 +9,29 @@ library(gtsummary)
 dat_p0 <- read.csv("DataProcessed/dat_p0_clean_kr.csv")
 
 ##*******************************************************************
+## ------------------ Table 1  ----------------------
+##*******************************************************************
+##
+
+dat_p0 %>%
+  tbl_summary(by = Collection.Sample,
+    include = c(Cortisol..nmol.L., DHEA..nmol.L.,
+                calc_book_int, calc_mems_int),
+    label = list(
+      Cortisol..nmol.L. = "Cortisol (nmol/L)",
+      DHEA..nmol.L. = "DHEA (nmol/L)",
+      calc_book_int = "Booklet Minutes Since Waking",
+      calc_mems_int = "Cap Minutes Since Waking"
+    ),
+    missing = 'ifany',
+    missing_text = "(Missing)") %>%
+  modify_header(stat_1 = "**Waking**  \nN = 89") %>%
+  modify_header(stat_2 = "**30-Minutes**  \nN = 90") %>%
+  modify_header(stat_3 = "**Lunch**  \nN = 91") %>%
+  modify_header(stat_4 = "**10-Hours**  \nN = 90") %>%
+  add_overall(last = TRUE)
+
+##*******************************************************************
 ## ------------------ RQ 1  ----------------------
 ##*******************************************************************
 ##
