@@ -1,5 +1,6 @@
 ## Loading packages
 library(tidyverse)
+library(hms)
 
 ## Reading in the data
 dat_p0_raw <- read.csv("DataRaw/Project0_Clean_v2.csv")
