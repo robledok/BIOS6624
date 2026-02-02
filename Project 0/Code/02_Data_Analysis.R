@@ -116,7 +116,7 @@ dat_rq2 <- dat_p0 %>%
   mutate(
     adherence = case_when(
       abs(calc_book_int - 30)  <= 7.5 | abs(calc_book_int - 600) <= 7.5  ~ "Good adherence",
-      abs(calc_book_int - 30)  <= 15  | abs(calc_book_int - 600) <= 15   ~ "Adequate adherence",
+      abs(calc_book_int - 30) > 7.5 & abs(calc_book_int - 30)  <= 15  | abs(calc_book_int - 600) <= 15  & abs(calc_book_int - 600) > 7.5 ~ "Adequate adherence",
       TRUE                                                              ~ "Poor adherence"
     ),
     time_group = case_when(
