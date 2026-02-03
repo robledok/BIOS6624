@@ -21,8 +21,9 @@ dat_p0 %>%
       Cortisol..nmol.L. = "Cortisol (nmol/L)",
       DHEA..nmol.L. = "DHEA (nmol/L)",
       calc_book_int = "Booklet Minutes Since Waking",
-      calc_mems_int = "Cap Minutes Since Waking"
+      calc_mems_int = "Caplet Minutes Since Waking"
     ),
+    statistic = list(all_continuous() ~ "{mean} ({sd})"),
     missing = 'ifany',
     missing_text = "(Missing)") %>%
   modify_header(stat_1 = "**Waking**  \nN = 89") %>%
