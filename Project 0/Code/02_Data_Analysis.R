@@ -217,6 +217,19 @@ ggplot(data = dat_cort_pred, aes(x = minutes, y = exp(fitted))) +
        y = "Cortisol (nmol/L)",
        title = "Estimated Means of Cortisol Over Time") 
 
+## With points
+ggplot() +
+  geom_point(data = dat_rq3, aes(x = calc_book_int, y = Cortisol..nmol.L., col = 'Observed'), alpha = 0.35) +
+  geom_line(data = dat_cort_pred, aes(x = minutes, y = exp(fitted), col = 'Predicted'), linewidth = 1) +
+  scale_color_manual(name = "Legend",
+                     values = c("Observed" = "black",
+                                "Predicted" = "skyblue2")) +
+  theme_bw() +
+  labs(x = "Time Since Waking (Minutes)",
+       y = "Cortisol (nmol/L)",
+       title = "Estimated Mean of Cortisol Over Time") + 
+  theme(legend.position = 'bottom')
+
 ## Fitted vs predicted DHEA:
 dat_dhea_pred <- expand.grid(
   minutes = seq(min(dat_rq3$calc_book_int), max(dat_rq3$calc_book_int), by = 5)
@@ -228,9 +241,23 @@ dat_dhea_pred <- dat_dhea_pred %>%
   )
 dat_dhea_pred$fitted <- predict(m2_rq3, newdata = dat_dhea_pred,
                                 re.form = NA)
-ggplot(data = dat_dhea_pred, aes(x = minutes, y = exp(fitted))) +
-  geom_line(linewidth = 1, col = 'palevioletred2') +
+ggplot() +
+  geom_line(data = dat_dhea_pred, aes(x = minutes, y = exp(fitted)), linewidth = 1, col = 'palevioletred2') +
   theme_bw() +
   labs(x = "Time Since Waking (Minutes)",
        y = "DHEA (nmol/L)",
        title = "Estimated Means of DHEA Over Time") 
+
+## With points
+
+ggplot() +
+  geom_point(data = dat_rq3, aes(x = calc_book_int, y = DHEA..nmol.L., col = 'Observed'), alpha = 0.35) +
+  geom_line(data = dat_dhea_pred, aes(x = minutes, y = exp(fitted), col = 'Predicted'), linewidth = 1) +
+  scale_color_manual(name = "Legend",
+                     values = c("Observed" = "black",
+                                "Predicted" = "palevioletred2")) +
+  theme_bw() +
+  labs(x = "Time Since Waking (Minutes)",
+       y = "DHEA (nmol/L)",
+       title = "Estimated Mean of DHEA Over Time") + 
+  theme(legend.position = 'bottom')
