@@ -63,8 +63,8 @@ ggplot(dat_rq1) +
                                 "Predicted" = "red")) +
   theme_bw() +
   xlab("Booklet Minutes Since Waking") +
-  ylab("Cap Minutes Since Waking") +
-  ggtitle("Cap Time vs. Booklet Time") +
+  ylab("Caplet Minutes Since Waking") +
+  ggtitle("Caplet Time vs. Booklet Time") +
   theme(legend.position = "bottom")
 
 ## Fitted vs predicted marginal:
@@ -85,8 +85,8 @@ ggplot() +
                                 "Predicted" = "red")) +
   theme_bw() +
   xlab("Booklet Minutes Since Waking") +
-  ylab("Cap Minutes Since Waking") +
-  ggtitle("Cap Time vs. Booklet Time") +
+  ylab("Caplet Minutes Since Waking") +
+  ggtitle("Caplet Time vs. Booklet Time") +
   theme(legend.position = "bottom")
 
 ## Checking QQ-plot and residuals
