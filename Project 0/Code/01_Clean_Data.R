@@ -33,11 +33,10 @@ dat_p0$calc_mems_int <- as.numeric(dat_p0$MEMs..Clock.Time - dat_p0$Sleep.Diary.
 ## Cortisol: anything over 26 is high, but exclude over 80
 ## DHEA: upper detection limit of 5.205 and exclude them and let her know who
 
-## Identifying subjects with upper detection for DHEA to notify PI
+## Identifying subjects count of upper detection for DHEA to notify PI
 dat_p0 %>%
   filter(DHEA..nmol.L. == 5.205) %>%
-  pull(SubjectID) %>%
-  unique()
+  count(SubjectID)
 
 ## Excluding cortisol over 80 and DHEA of 5.205
 dat_p0 <- dat_p0 %>%
