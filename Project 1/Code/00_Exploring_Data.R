@@ -8,6 +8,8 @@ dat_p1 <- read.csv("DataRaw/hiv_6624_final.csv")
 names(dat_p1)
 ## Number of observations
 nrow(dat_p1)
+## Number of individuals
+length(unique(dat_p1$newid))
 ## Looking at measurements per person
 dat_p1 %>%
   group_by(newid) %>%
@@ -18,8 +20,7 @@ dat_p1 %>%
   nrow()
 ## Looking at baseline measurements
 dat_p1_base <- dat_p1 %>%
-  group_by(newid) %>%
-  slice(1)
+  filter(years == 0)
 dat_p1_base %>%
   tbl_summary(include = c(-X, -newid),
               by = hard_drugs,
@@ -55,3 +56,31 @@ ggplot(dat_plot_cd4, aes(x = years, y = LEU3N)) +
     title = " CD4+ T cell count by Year"
   ) +
   theme_minimal()
+
+## Building baseline table 1 based on variables of interest
+dat_p1_base %>%
+  mutate(SMOKE = factor(SMOKE, levels = c("1", "2", "3"), 
+                        labels = c("Never Smoked", "Former Smoker", "Current Smoker")),
+         EDUCBAS = factor(EDUCBAS, levels = c("1", "2", "3", "4", "5", "6", "7"),
+                          labels = c("8th grade or less", "9, 10, or 11th grade",
+                                     "12th grade", "At least one year college but no degree",
+                                     "Four years college / got degree",
+                                     "Some graduate work", " Post-graduate degree")),
+         RACE = factor(RACE, levels = c("1", "2", "3", "4", "5", "6", "7", "8"),
+                       labels = c("White, non-Hispanic", "White, Hispanic", "Black, non-Hispanic",
+                                  "Black, Hispanic", "American Indian or Alaskan Native", 
+                                  "Asian or Pacific Islander", "Other", 
+                                  "Other Hispanic (created for 2001-03 new recruits)"))) %>%
+  tbl_summary(include = c(age, BMI, SMOKE, EDUCBAS, RACE),
+              by = hard_drugs,
+              label = list(
+                age ~ "Age",
+                SMOKE ~ "Smoking Status",
+                EDUCBAS ~ "Education",
+                RACE ~ "Race, Ethnicity"
+              ),
+              missing = 'ifany',
+              missing_text = "(Missing)") %>%
+  modify_header(stat_1 = "**No Hard-Drug Usage**  \nN = 649") %>%
+  modify_header(stat_2 = "**Hard-Drug Usage**  \nN = 66") %>%
+  add_overall(last = TRUE)
