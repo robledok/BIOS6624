@@ -71,5 +71,10 @@ dat_p1 <- dat_p1 %>%
     )
   )
 
+## Excluding BMI above 250 and below 0 and seeing how many observations we lose
+dat_p1_clean <- dat_p1 %>%
+  filter(bmi_base < 250 & bmi_base > 0)
+nrow(dat_p1) - nrow(dat_p1_clean)
+
 ## Saving new dataset
 write.csv(dat_p1, "DataProcessed/dat_p1_clean_kr.csv")
