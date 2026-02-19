@@ -77,4 +77,4 @@ dat_p1_clean <- dat_p1 %>%
 nrow(dat_p1) - nrow(dat_p1_clean)
 
 ## Saving new dataset
-write.csv(dat_p1, "DataProcessed/dat_p1_clean_kr.csv")
+write.csv(dat_p1_clean, "DataProcessed/dat_p1_clean_kr.csv")
