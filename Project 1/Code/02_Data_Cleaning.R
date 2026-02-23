@@ -59,7 +59,7 @@ dat_p1 <- dat_p1 %>%
 length(unique(dat_p1_subset$newid)) - length(unique(dat_p1$newid))
 nrow(dat_p1)
 
-## Collapsing race and education
+## Collapsing race, education, adherence, smoking
 dat_p1 <- dat_p1 %>%
   mutate(
     race_binary = if_else(race_base == 1, "White, Non-Hispanic", "Other"),
@@ -68,7 +68,13 @@ dat_p1 <- dat_p1 %>%
       educ_base == 6 ~ "College Degree or Higher",
       educ_base == 7 ~ "College Degree or Higher",
       TRUE ~ "No College Degree"
-    )
+    ),
+    adh_binary = case_when(
+      ADH == 1 ~ "At least 95%",
+      ADH == 2 ~ "At least 95%",
+      TRUE ~ "Less than 95%"
+    ),
+    smoke_binary = ifelse(smoke_base == 3, "Current Smoker", "Not aCurrent Smoker")
   )
 
 ## Excluding BMI above 250 and below 0 and seeing how many observations we lose
