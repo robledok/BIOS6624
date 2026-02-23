@@ -74,7 +74,7 @@ dat_p1 <- dat_p1 %>%
       ADH == 2 ~ "At least 95%",
       TRUE ~ "Less than 95%"
     ),
-    smoke_binary = ifelse(smoke_base == 3, "Current Smoker", "Not aCurrent Smoker")
+    smoke_binary = ifelse(smoke_base == 3, "Current Smoker", "Not a Current Smoker")
   )
 
 ## Excluding BMI above 250 and below 0 and seeing how many observations we lose
