@@ -1,9 +1,7 @@
 ## Loading packages
 library(tidyverse)
-library(ggplot2)
-library(lme4)
-library(lmerTest)
 library(gtsummary)
+library(brms)
 
 ## Reading in the data
 dat_p1 <- read.csv("DataProcessed/dat_p1_clean_kr.csv")
