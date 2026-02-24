@@ -17,6 +17,9 @@ dat_p1$race_binary <- relevel(factor(dat_p1$race_binary), ref = "White, Non-Hisp
 dat_p1$adh_binary <- relevel(factor(dat_p1$adh_binary), ref = "Less than 95%")
 dat_p1$smoke_binary <- relevel(factor(dat_p1$smoke_binary), ref = "Not a Current Smoker")
 
+## Making sure drugs_base is a categorical variable
+dat_p1$drugs_base <- as.factor(dat_p1$drugs_base)
+
 dat_p1 %>%
   tbl_summary(include = c(age_base, bmi_base, smoke_binary, educ_binary, race_binary, adh_binary),
               by = drugs_base,
@@ -34,3 +37,70 @@ dat_p1 %>%
   modify_header(stat_1 = "**No Hard-Drug Usage**  \nN = 427") %>%
   modify_header(stat_2 = "**Hard-Drug Usage**  \nN = 36") %>%
   add_overall(last = TRUE)
+
+##*******************************************************************
+## ------------------ Frequentist Models  ----------------------
+##*******************************************************************
+##
+
+## CD4 Models
+# Model with adherence
+freq_mod1_cd4 <- lm(LEU3N ~ drugs_base + cd4_base + age_base + 
+                     bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
+                   data = dat_p1)
+# Model without adherence
+freq_mod2_cd4 <- lm(LEU3N ~ drugs_base + cd4_base + age_base + 
+                      bmi_base + smoke_binary + educ_binary + race_binary,
+                    data = dat_p1)
+
+## Viral Load Models
+# Model with adherence
+freq_mod1_vl <- lm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+                     bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
+                   data = dat_p1)
+# Model without adherence
+freq_mod2_vl <- lm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+                     bmi_base + smoke_binary + educ_binary + race_binary,
+                   data = dat_p1)
+
+## Mental Quality of Life Models
+# Model with adherence
+freq_mod1_mqol <- lm(AGG_MENT ~ drugs_base + mqol_base + age_base + 
+                     bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
+                   data = dat_p1)
+# Model without adherence
+freq_mod2_mqol <- lm(AGG_MENT ~ drugs_base + mqol_base + age_base + 
+                       bmi_base + smoke_binary + educ_binary + race_binary,
+                     data = dat_p1)
+
+## Physical Quality of Life Models
+# Model with adherence
+freq_mod1_pqol <- lm(AGG_PHYS ~ drugs_base + pqol_base + age_base + 
+                     bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
+                   data = dat_p1)
+# Model without adherence
+freq_mod2_pqol <- lm(AGG_PHYS ~ drugs_base + pqol_base + age_base + 
+                       bmi_base + smoke_binary + educ_binary + race_binary,
+                     data = dat_p1)
+
+## Looking at summary coefficient output and AIC
+
+# CD4 Models
+summary(freq_mod1_cd4)$coefficients
+summary(freq_mod2_cd4)$coefficients
+AIC(freq_mod1_cd4, freq_mod2_cd4)
+
+# Viral Load Models
+summary(freq_mod1_vl)$coefficients
+summary(freq_mod2_vl)$coefficients
+AIC(freq_mod1_vl, freq_mod2_vl)
+
+# Mental Quality of Life Models
+summary(freq_mod1_mqol)$coefficients
+summary(freq_mod2_mqol)$coefficients
+AIC(freq_mod1_mqol, freq_mod2_mqol)
+
+# Physical Quality of Life Models
+summary(freq_mod1_pqol)$coefficients
+summary(freq_mod2_pqol)$coefficients
+AIC(freq_mod1_pqol, freq_mod2_pqol)
