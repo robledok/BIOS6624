@@ -2,6 +2,7 @@
 library(tidyverse)
 library(gtsummary)
 library(brms)
+library(jtools)
 
 ## Reading in the data
 dat_p1 <- read.csv("DataProcessed/dat_p1_clean_kr.csv")
@@ -86,23 +87,23 @@ freq_mod2_pqol <- lm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
 ## Looking at summary coefficient output and AIC
 
 # CD4 Models
-summary(freq_mod1_cd4)$coefficients
-summary(freq_mod2_cd4)$coefficients
+summ(freq_mod1_cd4, confint = TRUE)
+summ(freq_mod2_cd4, confint = TRUE)
 AIC(freq_mod1_cd4, freq_mod2_cd4)
 
 # Viral Load Models
-summary(freq_mod1_vl)$coefficients
-summary(freq_mod2_vl)$coefficients
+summ(freq_mod1_vl, confint = TRUE)
+summ(freq_mod2_vl, confint = TRUE)
 AIC(freq_mod1_vl, freq_mod2_vl)
 
 # Mental Quality of Life Models
-summary(freq_mod1_mqol)$coefficients
-summary(freq_mod2_mqol)$coefficients
+summ(freq_mod1_mqol, confint = TRUE)
+summ(freq_mod2_mqol, confint = TRUE)
 AIC(freq_mod1_mqol, freq_mod2_mqol)
 
 # Physical Quality of Life Models
-summary(freq_mod1_pqol)$coefficients
-summary(freq_mod2_pqol)$coefficients
+summ(freq_mod1_pqol, confint = TRUE)
+summ(freq_mod2_pqol, confint = TRUE)
 AIC(freq_mod1_pqol, freq_mod2_pqol)
 
 ##*******************************************************************
