@@ -225,6 +225,19 @@ loo(bayes_mod1_pqol, bayes_mod2_pqol)
 ##*******************************************************************
 ##
 
+## CD4 Models
+plot(bayes_mod1_cd4)
+plot(bayes_mod2_cd4)
+## Viral Load Models
+plot(bayes_mod1_vl)
+plot(bayes_mod2_vl)
+## Mental Quality of Life Models
+plot(bayes_mod1_mqol)
+plot(bayes_mod2_mqol)
+## Physical Quality of Life Models
+plot(bayes_mod1_pqol)
+plot(bayes_mod2_pqol)
+
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
 ##*******************************************************************
