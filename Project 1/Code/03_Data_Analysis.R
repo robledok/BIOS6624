@@ -238,6 +238,52 @@ summary(bayes_mod2_pqol)$fixed
 AIC(freq_mod1_pqol, freq_mod2_pqol)
 loo(bayes_mod1_pqol, bayes_mod2_pqol)
 
+##*******************************************************************
+## ------------------ Computing Posterior Probability  ----------------------
+##*******************************************************************
+##
+
+## CD4 Model
+post_mod1_cd4 <- as_draws_df(bayes_mod1_cd4)
+prob_mod1_cd4 <- mean(abs(post_mod1_cd4$b_drugs_base1) > 50)
+prob_mod1_cd4
+
+post_mod2_cd4 <- as_draws_df(bayes_mod2_cd4)
+prob_mod2_cd4 <- mean(abs(post_mod2_cd4$b_drugs_base1) > 50)
+prob_mod2_cd4
+
+## Viral Load Model
+post_mod1_vl <- as_draws_df(bayes_mod1_vl)
+prob_mod1_vl <- mean(abs(post_mod1_vl$b_drugs_base1) > 0.5)
+prob_mod1_vl
+
+post_mod2_vl <- as_draws_df(bayes_mod2_vl)
+prob_mod2_vl <- mean(abs(post_mod2_vl$b_drugs_base1) > 0.5)
+prob_mod2_vl
+
+## Mental Quality of Life Model
+post_mod1_mqol <- as_draws_df(bayes_mod1_mqol)
+prob_mod1_mqol <- mean(abs(post_mod1_mqol$b_drugs_base1) > 2)
+prob_mod1_mqol
+
+post_mod2_mqol <- as_draws_df(bayes_mod2_mqol)
+prob_mod2_mqol <- mean(abs(post_mod2_mqol$b_drugs_base1) > 2)
+prob_mod2_mqol
+
+## Physical Quality of Life Model
+post_mod1_pqol <- as_draws_df(bayes_mod1_pqol)
+prob_mod1_pqol <- mean(abs(post_mod1_pqol$b_drugs_base1) > 2)
+prob_mod1_pqol
+
+post_mod2_pqol <- as_draws_df(bayes_mod2_pqol)
+prob_mod2_pqol <- mean(abs(post_mod2_pqol$b_drugs_base1) > 2)
+prob_mod2_pqol
+
+##*******************************************************************
+## ------------------ Summary Table  ----------------------
+##*******************************************************************
+##
+
 
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
