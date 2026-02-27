@@ -170,7 +170,7 @@ bayes_mod1_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                        seed = 6624,
                        prior = c(set_prior("normal(0, 10000)", class = "b"),
                                  set_prior("normal(1,10000)", class = "Intercept"),
-                                 set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                 set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                        chains = 4, iter = 25000, warmup = 5000, refresh = 0)
 # Model without adherence
 bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base + 
@@ -210,3 +210,48 @@ summ(freq_mod1_pqol, confint = TRUE)
 summary(bayes_mod1_pqol)$fixed
 summ(freq_mod2_pqol, confint = TRUE)
 summary(bayes_mod2_pqol)$fixed
+
+##*******************************************************************
+## ------------------ Model Fit Graph  ----------------------
+##*******************************************************************
+#
+
+## Defining data for prediction (hold everything at mean)
+new_dat <- expand.grid(
+  drugs_base = levels(dat_p1$drugs_base),
+  cd4_base = mean(dat_p1$cd4_base, na.rm = TRUE),
+  age_base = mean(dat_p1$age_base, na.rm = TRUE),
+  bmi_base = mean(dat_p1$bmi_base, na.rm = TRUE),
+  smoke_binary = "Not a Current Smoker",
+  educ_binary = "No College Degree",
+  race_binary = "White, Non-Hispanic",
+  adh_binary = "Less than 95%"
+)
+
+## CD4 Model
+## Get posterior fitted values with 95% credible intervals
+pred1 <- fitted(
+  bayes_mod1_cd4,
+  newdata = new_dat,
+  summary = TRUE,
+  probs = c(.025, .975)
+)
+
+## Combine data with predictions
+new_dat1 <- cbind(new_dat, pred1)
+new_dat1$drugs_base <- factor(new_dat1$drugs_base, levels = c("0", "1"), labels = c("No Hard Drug Use", "Hard Drug Use"))
+
+## Plot the data
+ggplot() +
+  geom_jitter(data = dat_p1, aes(x = drugs_base, y = LEU3N, color = "Observed Values"), alpha = 0.3, width = 0.1) +
+  geom_errorbar(data = new_dat1, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
+  geom_point(data = new_dat1, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
+  scale_color_manual(name = "Legend",
+                     values = c("95% CrI" = "dodgerblue1",
+                                "Posterior Mean" = "violetred1",
+                                "Observed Values" = "gray50")) +
+  labs(x = NULL,
+       y = "CD4+ T Cell Counts",
+       title = "Observed CD4 Values with Posterior Mean and 95% CrI") +
+  theme_bw() +
+  theme(legend.position = "bottom")
