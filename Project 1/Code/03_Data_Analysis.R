@@ -117,8 +117,8 @@ bayes_mod1_cd4 <- brm(LEU3N ~ drugs_base + cd4_base + age_base +
                       data = dat_p1,
                       seed = 6624,
                       prior = c(set_prior("normal(0, 10000)", class = "b"),
-                              set_prior("normal(1,10000)", class = "Intercept"),
-                              set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                set_prior("normal(1,10000)", class = "Intercept"),
+                                set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                       chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 # Model without adherence
 bayes_mod2_cd4 <- brm(LEU3N ~ drugs_base + cd4_base + age_base + 
@@ -127,7 +127,7 @@ bayes_mod2_cd4 <- brm(LEU3N ~ drugs_base + cd4_base + age_base +
                       seed = 6624,
                       prior = c(set_prior("normal(0, 10000)", class = "b"),
                                 set_prior("normal(1,10000)", class = "Intercept"),
-                                set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                       chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 
 ## Viral Load Models
@@ -138,7 +138,7 @@ bayes_mod1_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base +
                      seed = 6624,
                      prior = c(set_prior("normal(0, 10000)", class = "b"),
                                set_prior("normal(1,10000)", class = "Intercept"),
-                               set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                               set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                      chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 # Model without adherence
 bayes_mod2_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
@@ -147,7 +147,7 @@ bayes_mod2_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base +
                      seed = 6624,
                      prior = c(set_prior("normal(0, 10000)", class = "b"),
                                set_prior("normal(1,10000)", class = "Intercept"),
-                               set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                               set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                      chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 
 ## Mental Quality of Life Models
@@ -158,7 +158,7 @@ bayes_mod1_mqol <- brm(AGG_MENT ~ drugs_base + mqol_base + age_base +
                        seed = 6624,
                        prior = c(set_prior("normal(0, 10000)", class = "b"),
                                  set_prior("normal(1,10000)", class = "Intercept"),
-                                 set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                 set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                        chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 # Model without adherence
 bayes_mod2_mqol <- brm(AGG_MENT ~ drugs_base + mqol_base + age_base + 
@@ -167,7 +167,7 @@ bayes_mod2_mqol <- brm(AGG_MENT ~ drugs_base + mqol_base + age_base +
                        seed = 6624,
                        prior = c(set_prior("normal(0, 10000)", class = "b"),
                                  set_prior("normal(1,10000)", class = "Intercept"),
-                                 set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                 set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                        chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 
 ## Physical Quality of Life Models
@@ -187,7 +187,7 @@ bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                        seed = 6624,
                        prior = c(set_prior("normal(0, 10000)", class = "b"),
                                  set_prior("normal(1,10000)", class = "Intercept"),
-                                 set_prior("normal(0,10000)", class = "sigma"), lb = 0),
+                                 set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                        chains = 4, iter = 5000, warmup = 25000, refresh = 0)
 
 ## Looking at summary coefficient output
