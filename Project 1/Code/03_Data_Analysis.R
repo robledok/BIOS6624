@@ -295,3 +295,81 @@ ggplot() +
        title = "Observed Viral Load Values with Posterior Mean and 95% CrI") +
   theme_bw() +
   theme(legend.position = "bottom")
+
+## Mental Quality of Life Model
+## Defining data for prediction (hold everything at mean)
+new_dat3 <- expand.grid(
+  drugs_base = levels(dat_p1$drugs_base),
+  mqol_base = mean(dat_p1$mqol_base, na.rm = TRUE),
+  age_base = mean(dat_p1$age_base, na.rm = TRUE),
+  bmi_base = mean(dat_p1$bmi_base, na.rm = TRUE),
+  smoke_binary = "Not a Current Smoker",
+  educ_binary = "No College Degree",
+  race_binary = "White, Non-Hispanic",
+  adh_binary = "Less than 95%"
+)
+## Get posterior fitted values with 95% credible intervals
+pred3 <- fitted(
+  bayes_mod1_mqol,
+  newdata = new_dat3,
+  summary = TRUE,
+  probs = c(.025, .975)
+)
+
+## Combine data with predictions
+new_dat3 <- cbind(new_dat3, pred3)
+
+## Plot the data
+ggplot() +
+  geom_jitter(data = dat_p1, aes(x = drugs_base, y = AGG_MENT, color = "Observed Values"), alpha = 0.3, width = 0.1) +
+  geom_errorbar(data = new_dat3, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
+  geom_point(data = new_dat3, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
+  scale_color_manual(name = "Legend",
+                     values = c("95% CrI" = "dodgerblue1",
+                                "Posterior Mean" = "violetred1",
+                                "Observed Values" = "gray50")) +
+  scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
+  labs(x = NULL,
+       y = "Mental Quality of Life Score",
+       title = "Observed Mental Quality of Life Scores with Posterior Mean and 95% CrI") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+## Physical Quality of Life Model
+## Defining data for prediction (hold everything at mean)
+new_dat4 <- expand.grid(
+  drugs_base = levels(dat_p1$drugs_base),
+  pqol_base = mean(dat_p1$pqol_base, na.rm = TRUE),
+  age_base = mean(dat_p1$age_base, na.rm = TRUE),
+  bmi_base = mean(dat_p1$bmi_base, na.rm = TRUE),
+  smoke_binary = "Not a Current Smoker",
+  educ_binary = "No College Degree",
+  race_binary = "White, Non-Hispanic",
+  adh_binary = "Less than 95%"
+)
+## Get posterior fitted values with 95% credible intervals
+pred4 <- fitted(
+  bayes_mod1_pqol,
+  newdata = new_dat4,
+  summary = TRUE,
+  probs = c(.025, .975)
+)
+
+## Combine data with predictions
+new_dat4 <- cbind(new_dat4, pred4)
+
+## Plot the data
+ggplot() +
+  geom_jitter(data = dat_p1, aes(x = drugs_base, y = AGG_PHYS, color = "Observed Values"), alpha = 0.3, width = 0.1) +
+  geom_errorbar(data = new_dat4, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
+  geom_point(data = new_dat4, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
+  scale_color_manual(name = "Legend",
+                     values = c("95% CrI" = "dodgerblue1",
+                                "Posterior Mean" = "violetred1",
+                                "Observed Values" = "gray50")) +
+  scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
+  labs(x = NULL,
+       y = "Physical Quality of Life Score",
+       title = "Observed Physical Quality of Life Score with Posterior Mean and 95% CrI") +
+  theme_bw() +
+  theme(legend.position = "bottom")
