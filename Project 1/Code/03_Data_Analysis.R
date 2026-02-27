@@ -84,32 +84,23 @@ freq_mod2_pqol <- lm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                        bmi_base + smoke_binary + educ_binary + race_binary,
                      data = dat_p1)
 
-## Looking at summary coefficient output and AIC
-
-# CD4 Models
-summ(freq_mod1_cd4, confint = TRUE)
-summ(freq_mod2_cd4, confint = TRUE)
-AIC(freq_mod1_cd4, freq_mod2_cd4)
-
-# Viral Load Models
-summ(freq_mod1_vl, confint = TRUE)
-summ(freq_mod2_vl, confint = TRUE)
-AIC(freq_mod1_vl, freq_mod2_vl)
-
-# Mental Quality of Life Models
-summ(freq_mod1_mqol, confint = TRUE)
-summ(freq_mod2_mqol, confint = TRUE)
-AIC(freq_mod1_mqol, freq_mod2_mqol)
-
-# Physical Quality of Life Models
-summ(freq_mod1_pqol, confint = TRUE)
-summ(freq_mod2_pqol, confint = TRUE)
-AIC(freq_mod1_pqol, freq_mod2_pqol)
 
 ##*******************************************************************
 ## ------------------ Bayesian Models  ----------------------
 ##*******************************************************************
 ##
+
+## USE NON-INFORMATIVE PRIORS:
+## Half-Normal prior for sigma: mean = 0, var = 10000
+## Normal prior for intercept: mean = 1, var = 10000
+## Normal prior for other betas: mean = 0, var = 10000
+
+## MCMC SETTINGS:
+## NUTS sampler
+## 5000 warmup
+## 25000 iterations
+## 4 chains
+## seed of 6624
 
 ## CD4 Models
 # Model with adherence
@@ -191,20 +182,31 @@ bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                                  set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                        chains = 4, iter = 25000, warmup = 5000, refresh = 0)
 
-## Looking at summary coefficient output
+##*******************************************************************
+## ------------------ Comparing Summary Output  ----------------------
+##*******************************************************************
+##
 
 # CD4 Models
+summ(freq_mod1_cd4, confint = TRUE)
 summary(bayes_mod1_cd4)$fixed
+summ(freq_mod2_cd4, confint = TRUE)
 summary(bayes_mod2_cd4)$fixed
 
 # Viral Load Models
+summ(freq_mod1_vl, confint = TRUE)
 summary(bayes_mod1_vl)$fixed
+summ(freq_mod2_vl, confint = TRUE)
 summary(bayes_mod2_vl)$fixed
 
 # Mental Quality of Life Models
+summ(freq_mod1_mqol, confint = TRUE)
 summary(bayes_mod1_mqol)$fixed
+summ(freq_mod2_mqol, confint = TRUE)
 summary(bayes_mod2_mqol)$fixed
 
 # Physical Quality of Life Models
+summ(freq_mod1_pqol, confint = TRUE)
 summary(bayes_mod1_pqol)$fixed
+summ(freq_mod2_pqol, confint = TRUE)
 summary(bayes_mod2_pqol)$fixed
