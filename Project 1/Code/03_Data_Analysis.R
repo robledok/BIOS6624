@@ -184,6 +184,24 @@ bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                        chains = 4, iter = 25000, warmup = 5000, refresh = 0)
 
 ##*******************************************************************
+## ------------------ Trace Plots  ----------------------
+##*******************************************************************
+##
+
+## CD4 Models
+plot(bayes_mod1_cd4)
+plot(bayes_mod2_cd4)
+## Viral Load Models
+plot(bayes_mod1_vl)
+plot(bayes_mod2_vl)
+## Mental Quality of Life Models
+plot(bayes_mod1_mqol)
+plot(bayes_mod2_mqol)
+## Physical Quality of Life Models
+plot(bayes_mod1_pqol)
+plot(bayes_mod2_pqol)
+
+##*******************************************************************
 ## ------------------ Comparing Summary Output and Goodness of Fit  ----------------------
 ##*******************************************************************
 ##
@@ -220,23 +238,6 @@ summary(bayes_mod2_pqol)$fixed
 AIC(freq_mod1_pqol, freq_mod2_pqol)
 loo(bayes_mod1_pqol, bayes_mod2_pqol)
 
-##*******************************************************************
-## ------------------ Trace Plots  ----------------------
-##*******************************************************************
-##
-
-## CD4 Models
-plot(bayes_mod1_cd4)
-plot(bayes_mod2_cd4)
-## Viral Load Models
-plot(bayes_mod1_vl)
-plot(bayes_mod2_vl)
-## Mental Quality of Life Models
-plot(bayes_mod1_mqol)
-plot(bayes_mod2_mqol)
-## Physical Quality of Life Models
-plot(bayes_mod1_pqol)
-plot(bayes_mod2_pqol)
 
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
