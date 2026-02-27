@@ -56,11 +56,11 @@ freq_mod2_cd4 <- lm(LEU3N ~ drugs_base + cd4_base + age_base +
 
 ## Viral Load Models
 # Model with adherence
-freq_mod1_vl <- lm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+freq_mod1_vl <- lm(log10(VLOAD) ~ drugs_base + log10(vl_base) + age_base + 
                      bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
                    data = dat_p1)
 # Model without adherence
-freq_mod2_vl <- lm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+freq_mod2_vl <- lm(log10(VLOAD) ~ drugs_base + log10(vl_base) + age_base + 
                      bmi_base + smoke_binary + educ_binary + race_binary,
                    data = dat_p1)
 
@@ -124,7 +124,7 @@ bayes_mod2_cd4 <- brm(LEU3N ~ drugs_base + cd4_base + age_base +
 
 ## Viral Load Models
 # Model with adherence
-bayes_mod1_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+bayes_mod1_vl <- brm(log10(VLOAD) ~ drugs_base + log10(vl_base) + age_base + 
                      bmi_base + smoke_binary + educ_binary + race_binary + adh_binary,
                      data = dat_p1,
                      seed = 6624,
@@ -133,7 +133,7 @@ bayes_mod1_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base +
                                set_prior("normal(0,10000)", class = "sigma", lb = 0)),
                      chains = 4, iter = 25000, warmup = 5000, refresh = 0)
 # Model without adherence
-bayes_mod2_vl <- brm(log10(VLOAD) ~ drugs_base + vl_base + age_base + 
+bayes_mod2_vl <- brm(log10(VLOAD) ~ drugs_base + log10(vl_base) + age_base + 
                      bmi_base + smoke_binary + educ_binary + race_binary,
                      data = dat_p1,
                      seed = 6624,
@@ -216,8 +216,10 @@ summary(bayes_mod2_pqol)$fixed
 ##*******************************************************************
 #
 
+## CD4 Model
+
 ## Defining data for prediction (hold everything at mean)
-new_dat <- expand.grid(
+new_dat1 <- expand.grid(
   drugs_base = levels(dat_p1$drugs_base),
   cd4_base = mean(dat_p1$cd4_base, na.rm = TRUE),
   age_base = mean(dat_p1$age_base, na.rm = TRUE),
@@ -228,18 +230,16 @@ new_dat <- expand.grid(
   adh_binary = "Less than 95%"
 )
 
-## CD4 Model
 ## Get posterior fitted values with 95% credible intervals
 pred1 <- fitted(
   bayes_mod1_cd4,
-  newdata = new_dat,
+  newdata = new_dat1,
   summary = TRUE,
   probs = c(.025, .975)
 )
 
 ## Combine data with predictions
-new_dat1 <- cbind(new_dat, pred1)
-new_dat1$drugs_base <- factor(new_dat1$drugs_base, levels = c("0", "1"), labels = c("No Hard Drug Use", "Hard Drug Use"))
+new_dat1 <- cbind(new_dat1, pred1)
 
 ## Plot the data
 ggplot() +
@@ -250,8 +250,48 @@ ggplot() +
                      values = c("95% CrI" = "dodgerblue1",
                                 "Posterior Mean" = "violetred1",
                                 "Observed Values" = "gray50")) +
+  scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
   labs(x = NULL,
        y = "CD4+ T Cell Counts",
        title = "Observed CD4 Values with Posterior Mean and 95% CrI") +
+  theme_bw() +
+  theme(legend.position = "bottom")
+
+## Viral Load Model
+## Defining data for prediction (hold everything at mean)
+new_dat2 <- expand.grid(
+  drugs_base = levels(dat_p1$drugs_base),
+  vl_base = mean(dat_p1$vl_base, na.rm = TRUE),
+  age_base = mean(dat_p1$age_base, na.rm = TRUE),
+  bmi_base = mean(dat_p1$bmi_base, na.rm = TRUE),
+  smoke_binary = "Not a Current Smoker",
+  educ_binary = "No College Degree",
+  race_binary = "White, Non-Hispanic",
+  adh_binary = "Less than 95%"
+)
+## Get posterior fitted values with 95% credible intervals
+pred2 <- fitted(
+  bayes_mod1_vl,
+  newdata = new_dat2,
+  summary = TRUE,
+  probs = c(.025, .975)
+)
+
+## Combine data with predictions
+new_dat2 <- cbind(new_dat2, pred2)
+
+## Plot the data
+ggplot() +
+  geom_jitter(data = dat_p1, aes(x = drugs_base, y = log10(VLOAD), color = "Observed Values"), alpha = 0.3, width = 0.1) +
+  geom_errorbar(data = new_dat2, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
+  geom_point(data = new_dat2, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
+  scale_color_manual(name = "Legend",
+                     values = c("95% CrI" = "dodgerblue1",
+                                "Posterior Mean" = "violetred1",
+                                "Observed Values" = "gray50")) +
+  scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
+  labs(x = NULL,
+       y = "log10(Viral Load Counts)",
+       title = "Observed Viral Load Values with Posterior Mean and 95% CrI") +
   theme_bw() +
   theme(legend.position = "bottom")
