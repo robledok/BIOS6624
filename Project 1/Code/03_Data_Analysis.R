@@ -3,6 +3,7 @@ library(tidyverse)
 library(gtsummary)
 library(brms)
 library(jtools)
+library(loo)
 
 ## Reading in the data
 dat_p1 <- read.csv("DataProcessed/dat_p1_clean_kr.csv")
@@ -183,7 +184,7 @@ bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
                        chains = 4, iter = 25000, warmup = 5000, refresh = 0)
 
 ##*******************************************************************
-## ------------------ Comparing Summary Output  ----------------------
+## ------------------ Comparing Summary Output and Goodness of Fit  ----------------------
 ##*******************************************************************
 ##
 
@@ -192,29 +193,42 @@ summ(freq_mod1_cd4, confint = TRUE)
 summary(bayes_mod1_cd4)$fixed
 summ(freq_mod2_cd4, confint = TRUE)
 summary(bayes_mod2_cd4)$fixed
+AIC(freq_mod1_cd4, freq_mod2_cd4)
+loo(bayes_mod1_cd4, bayes_mod2_cd4)
 
 # Viral Load Models
 summ(freq_mod1_vl, confint = TRUE)
 summary(bayes_mod1_vl)$fixed
 summ(freq_mod2_vl, confint = TRUE)
 summary(bayes_mod2_vl)$fixed
+AIC(freq_mod1_vl, freq_mod2_vl)
+loo(bayes_mod1_vl, bayes_mod2_vl)
 
 # Mental Quality of Life Models
 summ(freq_mod1_mqol, confint = TRUE)
 summary(bayes_mod1_mqol)$fixed
 summ(freq_mod2_mqol, confint = TRUE)
 summary(bayes_mod2_mqol)$fixed
+AIC(freq_mod1_mqol, freq_mod2_mqol)
+loo(bayes_mod1_mqol, bayes_mod2_mqol)
 
 # Physical Quality of Life Models
 summ(freq_mod1_pqol, confint = TRUE)
 summary(bayes_mod1_pqol)$fixed
 summ(freq_mod2_pqol, confint = TRUE)
 summary(bayes_mod2_pqol)$fixed
+AIC(freq_mod1_pqol, freq_mod2_pqol)
+loo(bayes_mod1_pqol, bayes_mod2_pqol)
+
+##*******************************************************************
+## ------------------ Trace Plots  ----------------------
+##*******************************************************************
+##
 
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
 ##*******************************************************************
-#
+##
 
 ## CD4 Model
 
