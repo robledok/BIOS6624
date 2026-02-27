@@ -193,17 +193,17 @@ bayes_mod2_pqol <- brm(AGG_PHYS ~ drugs_base + pqol_base + age_base +
 ## Looking at summary coefficient output
 
 # CD4 Models
-summary(bayes_mod1_cd4)$coefficients
-summary(bayes_mod2_cd4)$coefficients
+summary(bayes_mod1_cd4)$fixed
+summary(bayes_mod2_cd4)$fixed
 
 # Viral Load Models
-summary(bayes_mod1_vl)$coefficients
-summary(bayes_mod2_vl)$coefficients
+summary(bayes_mod1_vl)$fixed
+summary(bayes_mod2_vl)$fixed
 
 # Mental Quality of Life Models
-summary(bayes_mod1_mqol)$coefficients
-summary(bayes_mod2_mqol)$coefficients
+summary(bayes_mod1_mqol)$fixed
+summary(bayes_mod2_mqol)$fixed
 
 # Physical Quality of Life Models
-summary(bayes_mod1_pqol)$coefficients
-summary(bayes_mod2_pqol)$coefficients
+summary(bayes_mod1_pqol)$fixed
+summary(bayes_mod2_pqol)$fixed
