@@ -4,6 +4,9 @@ library(gtsummary)
 library(brms)
 library(jtools)
 library(loo)
+library(kableExtra)
+library(flextable)
+library(officer)
 
 ## Reading in the data
 dat_p1 <- read.csv("DataProcessed/dat_p1_clean_kr.csv")
@@ -22,7 +25,7 @@ dat_p1$smoke_binary <- relevel(factor(dat_p1$smoke_binary), ref = "Not a Current
 ## Making sure drugs_base is a categorical variable
 dat_p1$drugs_base <- as.factor(dat_p1$drugs_base)
 
-dat_p1 %>%
+tbl1 <- dat_p1 %>%
   tbl_summary(include = c(age_base, bmi_base, smoke_binary, educ_binary, race_binary, adh_binary),
               by = drugs_base,
               label = list(
@@ -39,6 +42,15 @@ dat_p1 %>%
   modify_header(stat_1 = "**No Hard-Drug Usage**  \nN = 427") %>%
   modify_header(stat_2 = "**Hard-Drug Usage**  \nN = 36") %>%
   add_overall(last = TRUE)
+
+# Convert to flextable
+tbl1_flex <- as_flex_table(tbl1)
+
+# Save to Word document
+doc <- read_docx() %>%
+  body_add_flextable(tbl1_flex)
+
+print(doc, target = "Dissemination/Table1.docx")
 
 ##*******************************************************************
 ## ------------------ Frequentist Models  ----------------------
@@ -280,12 +292,15 @@ prob_mod2_pqol <- mean(abs(post_mod2_pqol$b_drugs_base1) > 2)
 prob_mod2_pqol
 
 ##*******************************************************************
-## ------------------ Summary Table  ----------------------
+## ------------------ Summary Tables  ----------------------
 ##*******************************************************************
 ##
 
+## Frequentist vs Bayesian Table
+
 dat_sum_tbl <- data.frame(
-  Model = c("CD4+ T Cell Counts", "log10(Viral Load Counts)", "Mental Quality of Life Score", "Physical Quality of Life Score"),
+  Model = c("CD4+ T Cell Counts", "log10(Viral Load Counts)", 
+            "Mental Quality of Life Score", "Physical Quality of Life Score"),
   freq_est = c(round(freq_mod1_cd4$coefficients[2], 2), round(freq_mod1_vl$coefficients[2], 2), 
                round(freq_mod1_mqol$coefficients[2], 2), round(freq_mod1_pqol$coefficients[2], 2)),
   freq_ci = c(paste0("(", round(summ(freq_mod1_cd4, confint = TRUE)$coeftable[2,2], 2), ", ", 
@@ -317,12 +332,84 @@ dat_sum_tbl <- data.frame(
   bayes_pp = c(round(prob_mod1_cd4, 4), round(prob_mod1_vl, 2), round(prob_mod1_mqol, 2), round(prob_mod1_pqol, 2))
 )
 
-kable(dat_sum_tbl, escape = TRUE, align = "lc", 
+kable(dat_sum_tbl, escape = TRUE, align = "lcccccc", 
       col.names = c("Model",
                     "Estimate", "95% CI", "p-value",
                     "Posterior Mean", "95% CrI", "Posterior Probability")) %>%
   add_header_above(c(" " = 1, "Frequentist" = 3, "Bayesian" = 3)) %>%
   kable_styling(full_width = FALSE, position = "center")
+
+## Adherence Table (used ChatGPT to help format)
+dat_adh_tbl <- data.frame(
+  Outcome = rep(c("CD4+ T Cell Counts",
+                  "log10(Viral Load Counts)",
+                  "Mental Quality of Life",
+                  "Physical Quality of Life"), each = 2),
+  Model = rep(c("With Adherence", "Without Adherence"), 4),
+  post_mean = c(
+    round(summary(bayes_mod1_cd4)$fixed[2,1], 2),
+    round(summary(bayes_mod2_cd4)$fixed[2,1], 2),
+    
+    round(summary(bayes_mod1_vl)$fixed[2,1], 2),
+    round(summary(bayes_mod2_vl)$fixed[2,1], 2),
+    
+    round(summary(bayes_mod1_mqol)$fixed[2,1], 2),
+    round(summary(bayes_mod2_mqol)$fixed[2,1], 2),
+    
+    round(summary(bayes_mod1_pqol)$fixed[2,1], 2),
+    round(summary(bayes_mod2_pqol)$fixed[2,1], 2)
+  ),
+  cri = c(
+    paste0("(", round(summary(bayes_mod1_cd4)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod1_cd4)$fixed[2,4], 2), ")"),
+    paste0("(", round(summary(bayes_mod2_cd4)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod2_cd4)$fixed[2,4], 2), ")"),
+    
+    paste0("(", round(summary(bayes_mod1_vl)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod1_vl)$fixed[2,4], 2), ")"),
+    paste0("(", round(summary(bayes_mod2_vl)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod2_vl)$fixed[2,4], 2), ")"),
+    
+    paste0("(", round(summary(bayes_mod1_mqol)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod1_mqol)$fixed[2,4], 2), ")"),
+    paste0("(", round(summary(bayes_mod2_mqol)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod2_mqol)$fixed[2,4], 2), ")"),
+    
+    paste0("(", round(summary(bayes_mod1_pqol)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod1_pqol)$fixed[2,4], 2), ")"),
+    paste0("(", round(summary(bayes_mod2_pqol)$fixed[2,3], 2), ", ",
+           round(summary(bayes_mod2_pqol)$fixed[2,4], 2), ")")
+  ),
+  looic = c(
+    round(loo(bayes_mod1_cd4)$estimates["looic", "Estimate"], 2),
+    round(loo(bayes_mod2_cd4)$estimates["looic", "Estimate"], 2),
+    
+    round(loo(bayes_mod1_vl)$estimates["looic", "Estimate"], 2),
+    round(loo(bayes_mod2_vl)$estimates["looic", "Estimate"], 2),
+    
+    round(loo(bayes_mod1_mqol)$estimates["looic", "Estimate"], 2),
+    round(loo(bayes_mod2_mqol)$estimates["looic", "Estimate"], 2),
+    
+    round(loo(bayes_mod1_pqol)$estimates["looic", "Estimate"], 2),
+    round(loo(bayes_mod2_pqol)$estimates["looic", "Estimate"], 2)
+  )
+)
+
+dat_adh_tbl %>%
+  select(-Outcome) %>%
+  kable(align = "lccc",
+    col.names = c("Model", "Posterior Mean", "95% CrI", "LOOIC"),
+    booktabs = TRUE,
+    digits = 2) %>%
+  kable_styling(
+    full_width = FALSE,
+    bootstrap_options = c("condensed"),
+    position = "center"
+  ) %>%
+  group_rows("CD4+ T Cell Counts", 1, 2) %>%
+  group_rows("log10(Viral Load Counts)", 3, 4) %>%
+  group_rows("Mental Quality of Life", 5, 6) %>%
+  group_rows("Physical Quality of Life", 7, 8)
 
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
@@ -366,7 +453,7 @@ ggplot() +
   scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
   labs(x = NULL,
        y = "CD4+ T Cell Counts",
-       title = "Observed CD4 Values with Posterior Mean and 95% CrI") +
+       title = "CD4+ T Cell Counts") +
   theme_bw() +
   theme(legend.position = "bottom")
 
@@ -405,7 +492,7 @@ ggplot() +
   scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
   labs(x = NULL,
        y = "log10(Viral Load Counts)",
-       title = "Observed Viral Load Values with Posterior Mean and 95% CrI") +
+       title = "Viral Load Counts") +
   theme_bw() +
   theme(legend.position = "bottom")
 
@@ -444,7 +531,7 @@ ggplot() +
   scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
   labs(x = NULL,
        y = "Mental Quality of Life Score",
-       title = "Observed Mental Quality of Life Scores with Posterior Mean and 95% CrI") +
+       title = "Mental Quality of Life") +
   theme_bw() +
   theme(legend.position = "bottom")
 
@@ -483,6 +570,6 @@ ggplot() +
   scale_x_discrete(labels = c("0" = "No Hard Drug Use", "1" = "Hard Drug Use")) +
   labs(x = NULL,
        y = "Physical Quality of Life Score",
-       title = "Observed Physical Quality of Life Score with Posterior Mean and 95% CrI") +
+       title = "Physical Quality of Life Score") +
   theme_bw() +
   theme(legend.position = "bottom")
