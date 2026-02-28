@@ -284,6 +284,45 @@ prob_mod2_pqol
 ##*******************************************************************
 ##
 
+dat_sum_tbl <- data.frame(
+  Model = c("CD4+ T Cell Counts", "log10(Viral Load Counts)", "Mental Quality of Life Score", "Physical Quality of Life Score"),
+  freq_est = c(round(freq_mod1_cd4$coefficients[2], 2), round(freq_mod1_vl$coefficients[2], 2), 
+               round(freq_mod1_mqol$coefficients[2], 2), round(freq_mod1_pqol$coefficients[2], 2)),
+  freq_ci = c(paste0("(", round(summ(freq_mod1_cd4, confint = TRUE)$coeftable[2,2], 2), ", ", 
+                     round(summ(freq_mod1_cd4, confint = TRUE)$coeftable[2,3], 2), ")"),
+              paste0("(", round(summ(freq_mod1_vl, confint = TRUE)$coeftable[2,2], 2), ", ", 
+                     round(summ(freq_mod1_vl, confint = TRUE)$coeftable[2,3], 2), ")"),
+              paste0("(", round(summ(freq_mod1_mqol, confint = TRUE)$coeftable[2,2], 2), ", ", 
+                     round(summ(freq_mod1_mqol, confint = TRUE)$coeftable[2,3], 2), ")"),
+              paste0("(", round(summ(freq_mod1_pqol, confint = TRUE)$coeftable[2,2], 2), ", ", 
+                     round(summ(freq_mod1_pqol, confint = TRUE)$coeftable[2,3], 2), ")")),
+  freq_p = c(ifelse(summ(freq_mod1_cd4, confint = TRUE)$coeftable[2,5] < 0.01, "<0.01", 
+                    round(summ(freq_mod1_cd4, confint = TRUE)$coeftable[2,5], 2)),
+             ifelse(summ(freq_mod1_vl, confint = TRUE)$coeftable[2,5] < 0.01, "<0.01", 
+                    round(summ(freq_mod1_vl, confint = TRUE)$coeftable[2,5], 2)),
+             ifelse(summ(freq_mod1_mqol, confint = TRUE)$coeftable[2,5] < 0.01, "<0.01", 
+                    round(summ(freq_mod1_mqol, confint = TRUE)$coeftable[2,5], 2)),
+             ifelse(summ(freq_mod1_pqol, confint = TRUE)$coeftable[2,5] < 0.01, "<0.01", 
+                    round(summ(freq_mod1_pqol, confint = TRUE)$coeftable[2,5], 2))),
+  bayes_est = c(round(summary(bayes_mod1_cd4)$fixed[2,1], 2), round(summary(bayes_mod1_vl)$fixed[2,1], 2), 
+                round(summary(bayes_mod1_mqol)$fixed[2,1], 2), round(summary(bayes_mod1_pqol)$fixed[2,1], 2)),
+  bayes_cri = c(paste0("(", round(summary(bayes_mod1_cd4)$fixed[2,3], 2), ", ", 
+                       round(summary(bayes_mod1_cd4)$fixed[2,4], 2), ")"),
+                paste0("(", round(summary(bayes_mod1_vl)$fixed[2,3], 2), ", ", 
+                       round(summary(bayes_mod1_vl)$fixed[2,4], 2), ")"),
+                paste0("(", round(summary(bayes_mod1_mqol)$fixed[2,3], 2), ", ", 
+                       round(summary(bayes_mod1_mqol)$fixed[2,4], 2), ")"),
+                paste0("(", round(summary(bayes_mod1_pqol)$fixed[2,3], 2), ", ", 
+                       round(summary(bayes_mod1_pqol)$fixed[2,4], 2), ")")),
+  bayes_pp = c(round(prob_mod1_cd4, 4), round(prob_mod1_vl, 2), round(prob_mod1_mqol, 2), round(prob_mod1_pqol, 2))
+)
+
+kable(dat_sum_tbl, escape = TRUE, align = "lc", 
+      col.names = c("Model",
+                    "Estimate", "95% CI", "p-value",
+                    "Posterior Mean", "95% CrI", "Posterior Probability")) %>%
+  add_header_above(c(" " = 1, "Frequentist" = 3, "Bayesian" = 3)) %>%
+  kable_styling(full_width = FALSE, position = "center")
 
 ##*******************************************************************
 ## ------------------ Model Fit Graph  ----------------------
