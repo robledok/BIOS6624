@@ -3,7 +3,7 @@ library(tidyverse)
 library(gtsummary)
 library(brms)
 library(jtools)
-library(loo)
+library(cowplot)
 library(kableExtra)
 library(flextable)
 library(officer)
@@ -257,38 +257,38 @@ loo(bayes_mod1_pqol, bayes_mod2_pqol)
 
 ## CD4 Model
 post_mod1_cd4 <- as_draws_df(bayes_mod1_cd4)
-prob_mod1_cd4 <- mean(abs(post_mod1_cd4$b_drugs_base1) > 50)
+prob_mod1_cd4 <- mean(post_mod1_cd4$b_drugs_base1 < -50)
 prob_mod1_cd4
 
 post_mod2_cd4 <- as_draws_df(bayes_mod2_cd4)
-prob_mod2_cd4 <- mean(abs(post_mod2_cd4$b_drugs_base1) > 50)
+prob_mod2_cd4 <- mean(post_mod2_cd4$b_drugs_base1 < -50)
 prob_mod2_cd4
 
 ## Viral Load Model
 post_mod1_vl <- as_draws_df(bayes_mod1_vl)
-prob_mod1_vl <- mean(abs(post_mod1_vl$b_drugs_base1) > 0.5)
+prob_mod1_vl <- mean(post_mod1_vl$b_drugs_base1 < -0.5)
 prob_mod1_vl
 
 post_mod2_vl <- as_draws_df(bayes_mod2_vl)
-prob_mod2_vl <- mean(abs(post_mod2_vl$b_drugs_base1) > 0.5)
+prob_mod2_vl <- mean(post_mod2_vl$b_drugs_base1 < -0.5)
 prob_mod2_vl
 
 ## Mental Quality of Life Model
 post_mod1_mqol <- as_draws_df(bayes_mod1_mqol)
-prob_mod1_mqol <- mean(abs(post_mod1_mqol$b_drugs_base1) > 2)
+prob_mod1_mqol <- mean(post_mod1_mqol$b_drugs_base1 < -2)
 prob_mod1_mqol
 
 post_mod2_mqol <- as_draws_df(bayes_mod2_mqol)
-prob_mod2_mqol <- mean(abs(post_mod2_mqol$b_drugs_base1) > 2)
+prob_mod2_mqol <- mean(post_mod2_mqol$b_drugs_base1 < -2)
 prob_mod2_mqol
 
 ## Physical Quality of Life Model
 post_mod1_pqol <- as_draws_df(bayes_mod1_pqol)
-prob_mod1_pqol <- mean(abs(post_mod1_pqol$b_drugs_base1) > 2)
+prob_mod1_pqol <- mean(post_mod1_pqol$b_drugs_base1 < -2)
 prob_mod1_pqol
 
 post_mod2_pqol <- as_draws_df(bayes_mod2_pqol)
-prob_mod2_pqol <- mean(abs(post_mod2_pqol$b_drugs_base1) > 2)
+prob_mod2_pqol <- mean(post_mod2_pqol$b_drugs_base1 < -2)
 prob_mod2_pqol
 
 ##*******************************************************************
@@ -330,7 +330,7 @@ dat_sum_tbl <- data.frame(
                        round(summary(bayes_mod1_mqol)$fixed[2,4], 2), ")"),
                 paste0("(", round(summary(bayes_mod1_pqol)$fixed[2,3], 2), ", ", 
                        round(summary(bayes_mod1_pqol)$fixed[2,4], 2), ")")),
-  bayes_pp = c(round(prob_mod1_cd4, 4), round(prob_mod1_vl, 2), round(prob_mod1_mqol, 2), round(prob_mod1_pqol, 2))
+  bayes_pp = c(round(prob_mod1_cd4, 4), round(prob_mod1_vl, 4), round(prob_mod1_mqol, 4), round(prob_mod1_pqol, 4))
 )
 
 dat_sum_tbl %>%
@@ -441,7 +441,7 @@ pred1 <- fitted(
 new_dat1 <- cbind(new_dat1, pred1)
 
 ## Plot the data
-ggplot() +
+cd4_plot <- ggplot() +
   geom_jitter(data = dat_p1, aes(x = drugs_base, y = LEU3N, color = "Observed Values"), alpha = 0.3, width = 0.1) +
   geom_errorbar(data = new_dat1, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
   geom_point(data = new_dat1, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
@@ -480,7 +480,7 @@ pred2 <- fitted(
 new_dat2 <- cbind(new_dat2, pred2)
 
 ## Plot the data
-ggplot() +
+vl_plot <- ggplot() +
   geom_jitter(data = dat_p1, aes(x = drugs_base, y = log10(VLOAD), color = "Observed Values"), alpha = 0.3, width = 0.1) +
   geom_errorbar(data = new_dat2, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
   geom_point(data = new_dat2, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
@@ -519,7 +519,7 @@ pred3 <- fitted(
 new_dat3 <- cbind(new_dat3, pred3)
 
 ## Plot the data
-ggplot() +
+mqol_plot <- ggplot() +
   geom_jitter(data = dat_p1, aes(x = drugs_base, y = AGG_MENT, color = "Observed Values"), alpha = 0.3, width = 0.1) +
   geom_errorbar(data = new_dat3, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
   geom_point(data = new_dat3, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
@@ -558,7 +558,7 @@ pred4 <- fitted(
 new_dat4 <- cbind(new_dat4, pred4)
 
 ## Plot the data
-ggplot() +
+pqol_plot <- ggplot() +
   geom_jitter(data = dat_p1, aes(x = drugs_base, y = AGG_PHYS, color = "Observed Values"), alpha = 0.3, width = 0.1) +
   geom_errorbar(data = new_dat4, aes(x = drugs_base, ymin = Q2.5, ymax = Q97.5, color = "95% CrI"), width = 0.1, linewidth = 1) +
   geom_point(data = new_dat4, aes(x = drugs_base, y = Estimate, color = "Posterior Mean"), size = 3) +
@@ -572,3 +572,75 @@ ggplot() +
        title = "Physical Quality of Life Score") +
   theme_bw() +
   theme(legend.position = "bottom")
+
+plot_grid(cd4_plot, vl_plot, ncol = 2)
+plot_grid(mqol_plot, pqol_plot, ncol = 2)
+
+##*******************************************************************
+## ------------------ Model Assumptions  ----------------------
+##*******************************************************************
+##
+
+## CD4 Model
+
+# Q-Q plot
+qqnorm(residuals(bayes_mod1_cd4)[, "Estimate"])
+qqline(residuals(bayes_mod1_cd4)[, "Estimate"])
+
+# residuals vs fitted
+ggplot(data = data.frame(Fitted = fitted(bayes_mod1_cd4, summary = TRUE)[, "Estimate"], 
+                         Residuals = residuals(bayes_mod1_cd4, summary = TRUE)[, "Estimate"]),
+       aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuals vs Fitted",
+       x = "Fitted Values",
+       y = "Residuals")
+
+## Viral Load Model
+
+# Q-Q plot
+qqnorm(residuals(bayes_mod1_vl)[, "Estimate"])
+qqline(residuals(bayes_mod1_vl)[, "Estimate"])
+
+# residuals vs fitted
+ggplot(data = data.frame(Fitted = fitted(bayes_mod1_vl, summary = TRUE)[, "Estimate"], 
+                         Residuals = residuals(bayes_mod1_vl, summary = TRUE)[, "Estimate"]),
+       aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuals vs Fitted",
+       x = "Fitted Values",
+       y = "Residuals")
+
+## Mental Quality of Life Model
+
+# Q-Q plot
+qqnorm(residuals(bayes_mod1_mqol)[, "Estimate"])
+qqline(residuals(bayes_mod1_mqol)[, "Estimate"])
+
+# residuals vs fitted
+ggplot(data = data.frame(Fitted = fitted(bayes_mod1_mqol, summary = TRUE)[, "Estimate"], 
+                         Residuals = residuals(bayes_mod1_mqol, summary = TRUE)[, "Estimate"]),
+       aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuals vs Fitted",
+       x = "Fitted Values",
+       y = "Residuals")
+
+## Physical Quality of Life Model
+
+# Q-Q plot
+qqnorm(residuals(bayes_mod1_pqol)[, "Estimate"])
+qqline(residuals(bayes_mod1_pqol)[, "Estimate"])
+
+# residuals vs fitted
+ggplot(data = data.frame(Fitted = fitted(bayes_mod1_pqol, summary = TRUE)[, "Estimate"], 
+                         Residuals = residuals(bayes_mod1_pqol, summary = TRUE)[, "Estimate"]),
+       aes(x = Fitted, y = Residuals)) +
+  geom_point(alpha = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuals vs Fitted",
+       x = "Fitted Values",
+       y = "Residuals")
