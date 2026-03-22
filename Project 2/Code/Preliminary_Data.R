@@ -3,6 +3,7 @@ library(tidyverse)
 library(ggplot2)
 library(corrplot)
 library(kableExtra)
+library(powertools)
 
 ## Reading in the data
 dat_p2 <- read.csv("DataRaw/PrelimData.csv")
@@ -69,3 +70,53 @@ cor_dat %>%
   group_rows("Between Predictors", 1, 1) %>%
   group_rows("Between Predictors and Outcomes", 2, 5) %>%
   group_rows("Between Outcomes", 6, 6) 
+
+##*******************************************************************
+## ------------------ Power Calculations  ----------------------
+##*******************************************************************
+##
+
+# Defining a function to compute power
+power_range <- function(predictor, outcome, p, alpha) {
+  
+  # Compute correlation
+  r <- cor(dat_p2[[predictor]], dat_p2[[outcome]], use = "complete.obs")
+  
+  # Base R^2
+  r_sq_base <- r^2
+  
+  # Adjusted R^2
+  r_sq_values <- c(
+    r_sq_base * 0.5,
+    r_sq_base * 0.6,
+    r_sq_base * 0.7,
+    r_sq_base * 0.8,
+    r_sq_base * 0.9,
+    r_sq_base
+  )
+  
+  # Run power for each R^2
+  results <- lapply(r_sq_values, function(Rsq_val) {
+    mlrF.overall(
+      N = 175,
+      p = p,
+      Rsq = Rsq_val,
+      alpha = alpha
+    )
+  })
+  
+  # Return clean table
+  power_vals <- sapply(results, function(x) x)
+  
+  print(sprintf("%s and %s Power Results", predictor, outcome))
+  data.frame(
+    Rsq = r_sq_values,
+    Power = power_vals
+  )
+}
+
+# Using the function for Aim 1 with Bonferroni Correction
+power_range(predictor = "IL_6", outcome = "CVLT_CNG3", p = 4, alpha= 0.05/4)
+power_range(predictor = "IL_6", outcome = "CORT_CNG3", p = 4, alpha= 0.05/4)
+power_range(predictor = "MCP_1", outcome = "CVLT_CNG3", p = 4, alpha= 0.05/4)
+power_range(predictor = "MCP_1", outcome = "CORT_CNG3", p = 4, alpha= 0.05/4)
