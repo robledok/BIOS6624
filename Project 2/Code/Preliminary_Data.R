@@ -86,7 +86,7 @@ r_vals <- seq(0.2, 0.7, by = 0.05)
 alpha_vals <- c(0.05/4, 0.05/6, 0.05/24)
 
 # Initialize a data frame for our results
-final_results <- data.frame(Radj = r_vals)
+a1_results <- data.frame(Radj = r_vals)
 
 # Looping through alpha
 for (a in alpha_vals) {
@@ -104,11 +104,11 @@ for (a in alpha_vals) {
   
   col_name <- paste0("Alpha_", round(a, 5))
   # Saving the power for each alpha column
-  final_results[[col_name]] <- power_vals * 100
+  a1_results[[col_name]] <- power_vals * 100
 }
 
 # Creating Table 4 for the paper (used ChatGPT to help format)
-final_results %>%
+a1_results %>%
   slice(1:7) %>%
   kable(align = "lccc",
         col.names = c("Correlation", "\u03B1 = 0.05/4", "\u03B1 = 0.05/6", 
@@ -131,3 +131,79 @@ final_results %>%
 ##*******************************************************************
 ##
 
+# List of values we are using
+N_pos_vals <- c(50, 75, 88, 125, 150)
+rho_diff_vals <- seq(0.3, 0.5, by = 0.1)
+rho_pos <- seq(0.2, 0.7, by = 0.05)
+alpha_vals <- c(0.05/4, 0.05/6, 0.05/24)
+
+# Initialize results data frame
+a2_results <- data.frame()
+
+# Loop through amyloid+ group sizes
+for (N_pos in N_pos_vals) {
+  
+  # Calculate amyloid- group size
+  N_neg <- 175 - N_pos
+  # Calculate ration between groups
+  n_ratio <- N_pos / N_neg
+  
+  # Looping through differences in correlations
+  for (diff in rho_diff_vals) {
+    # Looping through all amyloid+ correlations
+    for (rho_p in rho_pos) {
+      # Calculating correlation of amyloid-
+      rho_n <- rho_p - diff
+      # Skip invalid correlations
+      if (rho_n >= 0 & rho_n <= 0.99) {
+        # Looping through alpha values
+        for (a in alpha_vals) {
+          # Compute power
+          power_val <- corr.2samp(
+            n1 = N_neg,
+            n.ratio = n_ratio,
+            rho1 = rho_n,
+            rho2 = rho_p,
+            alpha = a
+          )
+          
+          # Store results
+          a2_results <- rbind(a2_results, data.frame(
+            Alpha = round(a, 5),
+            N_pos = N_pos,
+            N_neg = N_neg,
+            Rho_neg = rho_n,
+            Rho_pos = rho_p,
+            Rho_diff = diff,
+            Power = power_val * 100
+          ))
+          
+        }
+      }
+    }
+  }
+}
+
+# Make sure Alpha is a factor with labels
+a2_results$Alpha <- factor(a2_results$Alpha,
+                           levels = c(0.00208, 0.00833, 0.0125),
+                           labels = c("\u03B1 = 0.05/4", "\u03B1 = 0.05/6", "\u03B1 = 0.05/24"))
+ggplot(a2_results, aes(x = Rho_pos, y = Power, color = Alpha)) +
+  geom_line() +
+  geom_hline(aes(yintercept = 80, color = "80% Power"), linetype = "dashed") +
+  facet_grid(Rho_diff ~ N_pos) +
+  scale_color_manual(
+    values = c("mediumpurple3", "seagreen4", "palevioletred2", "black"),
+    breaks = c("\u03B1 = 0.05/4", "\u03B1 = 0.05/6", "\u03B1 = 0.05/24", "80% Power")
+  ) +
+  labs(
+    title = "Power vs Amyloid+ Correlation",
+    x = "Amyloid+ Correlation",
+    y = "Power (%)",
+    color = ""
+  ) +
+  ylim(0, 100) +
+  theme_bw() +
+  theme(
+    legend.position = "bottom"
+  )
