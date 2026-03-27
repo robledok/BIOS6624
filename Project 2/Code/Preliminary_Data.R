@@ -8,6 +8,13 @@ library(powertools)
 ## Reading in the data
 dat_p2 <- read.csv("DataRaw/PrelimData.csv")
 
+## Creating a year 1 - baseline variable
+dat_p2 <- dat_p2 %>%
+  mutate(
+    cort_diff = -1 * CORT_CNG3,
+    cvlt_dff = -1 * CVLT_CNG3
+  )
+
 ##*******************************************************************
 ## ------------------ Correlation Matrix and Plot  ----------------------
 ##*******************************************************************
@@ -22,33 +29,29 @@ corrplot(cor_matrix, method = 'color', type = 'lower', addCoef.col = 'black', co
 ##
 
 # Between Outcomes
-cor.test(dat_p2$CVLT_CNG3, dat_p2$CORT_CNG3)
+cor.test(dat_p2$cvlt_dff, dat_p2$cort_diff)
 
 # Between Predictors
 cor.test(dat_p2$IL_6, dat_p2$MCP_1)
 
 # Between Outcomes and Predictors
-cor.test(dat_p2$IL_6, dat_p2$CVLT_CNG3)
-cor.test(dat_p2$IL_6, dat_p2$CORT_CNG3)
-cor.test(dat_p2$MCP_1, dat_p2$CVLT_CNG3)
-cor.test(dat_p2$MCP_1, dat_p2$CORT_CNG3)
+cor.test(dat_p2$IL_6, dat_p2$cvlt_dff)
+cor.test(dat_p2$IL_6, dat_p2$cort_diff)
+cor.test(dat_p2$MCP_1, dat_p2$cvlt_dff)
+cor.test(dat_p2$MCP_1, dat_p2$cort_diff)
 
-##*******************************************************************
-## ------------------ Creating Table of Results ----------------------
-##*******************************************************************
-##
-
+# Creating Table of Correlation Results
 cor_dat <- data.frame(
   Variables = c("IL6 and MCP1", "IL6 and CVLT", 'IL6 and Cortical Thickness',
                 "MCP1 and CVLT", "MCP1 and Cortical Thickness", "CVLT and Cortical Thickness"),
-  Estimate = c(cor.test(dat_p2$IL_6, dat_p2$MCP_1)$estimate, cor.test(dat_p2$IL_6, dat_p2$CVLT_CNG3)$estimate,
-               cor.test(dat_p2$IL_6, dat_p2$CORT_CNG3)$estimate,
-               cor.test(dat_p2$MCP_1, dat_p2$CVLT_CNG3)$estimate, cor.test(dat_p2$MCP_1, dat_p2$CORT_CNG3)$estimate,
-               cor.test(dat_p2$CVLT_CNG3, dat_p2$CORT_CNG3)$estimate),
-  Pval = c(cor.test(dat_p2$IL_6, dat_p2$MCP_1)$p.value, cor.test(dat_p2$IL_6, dat_p2$CVLT_CNG3)$p.value,
-                        cor.test(dat_p2$IL_6, dat_p2$CORT_CNG3)$p.value,
-                        cor.test(dat_p2$MCP_1, dat_p2$CVLT_CNG3)$p.value, cor.test(dat_p2$MCP_1, dat_p2$CORT_CNG3)$p.value,
-                        cor.test(dat_p2$CVLT_CNG3, dat_p2$CORT_CNG3)$p.value)
+  Estimate = c(cor.test(dat_p2$IL_6, dat_p2$MCP_1)$estimate, cor.test(dat_p2$IL_6, dat_p2$cvlt_dff)$estimate,
+               cor.test(dat_p2$IL_6, dat_p2$cort_diff)$estimate,
+               cor.test(dat_p2$MCP_1, dat_p2$cvlt_dff)$estimate, cor.test(dat_p2$MCP_1, dat_p2$cort_diff)$estimate,
+               cor.test(dat_p2$cvlt_dff, dat_p2$cort_diff)$estimate),
+  Pval = c(cor.test(dat_p2$IL_6, dat_p2$MCP_1)$p.value, cor.test(dat_p2$IL_6, dat_p2$cvlt_dff)$p.value,
+                        cor.test(dat_p2$IL_6, dat_p2$cort_diff)$p.value,
+                        cor.test(dat_p2$MCP_1, dat_p2$cvlt_dff)$p.value, cor.test(dat_p2$MCP_1, dat_p2$cort_diff)$p.value,
+                        cor.test(dat_p2$cvlt_dff, dat_p2$cort_diff)$p.value)
 )
 
 # Used ChatGPT to help format
@@ -72,51 +75,59 @@ cor_dat %>%
   group_rows("Between Outcomes", 6, 6) 
 
 ##*******************************************************************
-## ------------------ Power Calculations  ----------------------
+## ------------------ Power Calculation Aim 1 ----------------------
 ##*******************************************************************
 ##
 
-# Defining a function to compute power
-power_range <- function(predictor, outcome, p, alpha) {
+# Correlation values
+r_vals <- seq(0.2, 0.7, by = 0.05)
+
+# Alpha values
+alpha_vals <- c(0.05/4, 0.05/6, 0.05/24)
+
+# Initialize a data frame for our results
+final_results <- data.frame(Radj = r_vals)
+
+# Looping through alpha
+for (a in alpha_vals) {
   
-  # Compute correlation
-  r <- cor(dat_p2[[predictor]], dat_p2[[outcome]], use = "complete.obs")
+  # Initizalizing a vector to save our results
+  power_vals <- numeric(length(r_vals)) 
   
-  # Base R^2
-  r_sq_base <- r^2
+  # Looping through our correlation values
+  for (i in seq_along(r_vals)) {
+    # Conducting the power calculation
+    power_vals[i] <- corr.1samp(N = 175, rhoA = r_vals[i], alpha = a)
+  }
   
-  # Adjusted R^2
-  r_sq_values <- c(
-    r_sq_base * 0.5,
-    r_sq_base * 0.6,
-    r_sq_base * 0.7,
-    r_sq_base * 0.8,
-    r_sq_base * 0.9,
-    r_sq_base
-  )
+  # Defining column names
   
-  # Run power for each R^2
-  results <- lapply(r_sq_values, function(Rsq_val) {
-    mlrF.overall(
-      N = 175,
-      p = p,
-      Rsq = Rsq_val,
-      alpha = alpha
-    )
-  })
-  
-  # Return clean table
-  power_vals <- sapply(results, function(x) x)
-  
-  print(sprintf("%s and %s Power Results", predictor, outcome))
-  data.frame(
-    Rsq = r_sq_values,
-    Power = power_vals
-  )
+  col_name <- paste0("Alpha_", round(a, 5))
+  # Saving the power for each alpha column
+  final_results[[col_name]] <- power_vals * 100
 }
 
-# Using the function for Aim 1 with Bonferroni Correction
-power_range(predictor = "IL_6", outcome = "CVLT_CNG3", p = 4, alpha= 0.05/4)
-power_range(predictor = "IL_6", outcome = "CORT_CNG3", p = 4, alpha= 0.05/4)
-power_range(predictor = "MCP_1", outcome = "CVLT_CNG3", p = 4, alpha= 0.05/4)
-power_range(predictor = "MCP_1", outcome = "CORT_CNG3", p = 4, alpha= 0.05/4)
+# Creating Table 4 for the paper (used ChatGPT to help format)
+final_results %>%
+  slice(1:7) %>%
+  kable(align = "lccc",
+        col.names = c("Correlation", "\u03B1 = 0.05/4", "\u03B1 = 0.05/6", 
+                      "\u03B1 = 0.05/24"),
+        digits = 2,
+        caption = "Table 4: Power Calculation for Aim 1") %>%
+  row_spec(0, bold = TRUE, color = "black", background = "#c4d9f1") %>%
+  kable_styling(
+    full_width = FALSE,
+    bootstrap_options = c("condensed", "hover", "striped"),
+    position = "center"
+  ) %>%
+  column_spec(1, width = "10em") %>%  
+  column_spec(2:4, width = "7em") %>%
+  add_header_above(c(" " = 1, "Power (%)" = 3), background = "#d9d9d9", color = "black")
+  
+
+##*******************************************************************
+## ------------------ Power Calculation Aim 2 ----------------------
+##*******************************************************************
+##
+
