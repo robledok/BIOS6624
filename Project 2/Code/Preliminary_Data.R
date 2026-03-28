@@ -133,8 +133,6 @@ a1_results %>%
 
 # List of values we are using
 N_pos_vals <- c(50, 75, 88, 125, 150)
-rho_diff_vals <- seq(0.3, 0.5, by = 0.1)
-rho_pos <- seq(0.2, 0.7, by = 0.05)
 alpha_vals <- c(0.05/4, 0.05/6, 0.05/24)
 
 # Initialize results data frame
@@ -145,19 +143,22 @@ for (N_pos in N_pos_vals) {
   
   # Calculate amyloid- group size
   N_neg <- 175 - N_pos
-  # Calculate ration between groups
+  
+  # Calculate ratio between groups
   n_ratio <- N_pos / N_neg
   
-  # Looping through differences in correlations
-  for (diff in rho_diff_vals) {
-    # Looping through all amyloid+ correlations
-    for (rho_p in rho_pos) {
-      # Calculating correlation of amyloid-
-      rho_n <- rho_p - diff
-      # Skip invalid correlations
-      if (rho_n >= 0 & rho_n <= 0.99) {
-        # Looping through alpha values
+  # Loop through correlation values
+  for (rho_p in seq(0.2, 0.7, by = 0.1)) {
+    for (rho_n in seq(0.2, 0.7, by = 0.1)) {
+      
+      # Skip invalid correlations (only keep rho_p > rho_n)
+      if (rho_p > rho_n) {
+        
+        rho_diff <- rho_p - rho_n
+        
+        # Loop through alpha values
         for (a in alpha_vals) {
+          
           # Compute power
           power_val <- corr.2samp(
             n1 = N_neg,
@@ -169,15 +170,14 @@ for (N_pos in N_pos_vals) {
           
           # Store results
           a2_results <- rbind(a2_results, data.frame(
-            Alpha = round(a, 5),
-            N_pos = N_pos,
-            N_neg = N_neg,
-            Rho_neg = rho_n,
-            Rho_pos = rho_p,
-            Rho_diff = diff,
-            Power = power_val * 100
+            Alpha    = round(a, 5),
+            N_pos    = N_pos,
+            N_neg    = N_neg,
+            Rho_neg  = rho_n,
+            Rho_pos  = rho_p,
+            Rho_diff = round(rho_diff, 2),
+            Power    = power_val * 100
           ))
-          
         }
       }
     }
@@ -185,25 +185,43 @@ for (N_pos in N_pos_vals) {
 }
 
 # Make sure Alpha is a factor with labels
-a2_results$Alpha <- factor(a2_results$Alpha,
+a2_results$Alpha_label <- factor(a2_results$Alpha,
                            levels = c(0.00208, 0.00833, 0.0125),
                            labels = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4"))
-ggplot(a2_results, aes(x = Rho_pos, y = Power, color = Alpha)) +
+a2_results$Rho_label <- factor(a2_results$Rho_diff,
+                                 levels = c(0.1, 0.2, 0.3, 0.4, 0.5),
+                                 labels = c("\u0394\u03C1 = 0.1",
+                                            "\u0394\u03C1 = 0.2",
+                                            "\u0394\u03C1 = 0.3", 
+                                            "\u0394\u03C1 = 0.4",
+                                            "\u0394\u03C1 = 0.5"))
+a2_results$N_pos_label <- factor(a2_results$N_pos,
+                               levels = c(50, 75, 88, 125, 150),
+                               labels = c("N+ = 50",
+                                          "N+ = 75",
+                                          "N+ = 88", 
+                                          "N+ = 125",
+                                          "N+ = 150"))
+a2_results %>%
+  filter(Rho_diff < 0.5) %>%
+ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
   geom_line() +
   geom_hline(aes(yintercept = 80, color = "80% Power"), linetype = "dashed") +
-  facet_grid(Rho_diff ~ N_pos) +
+  facet_grid(Rho_label ~ N_pos_label) +
   scale_color_manual(
-    values = c("palevioletred2", "seagreen4", "mediumpurple3", "black"),
-    breaks = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4", "80% Power")
+    values = c(
+      "\u03B1 = 0.05/4"  = "mediumpurple3",
+      "\u03B1 = 0.05/6"  = "seagreen4",
+      "\u03B1 = 0.05/24" = "palevioletred3",
+      "80% Power"        = "black"
+    )
   ) +
   labs(
     title = "Power vs Amyloid+ Correlation",
-    x = "Amyloid+ Correlation",
+    x = "Amyloid+ Correlation (\u03C1)",
     y = "Power (%)",
     color = ""
   ) +
   ylim(0, 100) +
   theme_bw() +
-  theme(
-    legend.position = "bottom"
-  )
+  theme(legend.position = "bottom")
