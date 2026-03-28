@@ -187,14 +187,14 @@ for (N_pos in N_pos_vals) {
 # Make sure Alpha is a factor with labels
 a2_results$Alpha <- factor(a2_results$Alpha,
                            levels = c(0.00208, 0.00833, 0.0125),
-                           labels = c("\u03B1 = 0.05/4", "\u03B1 = 0.05/6", "\u03B1 = 0.05/24"))
+                           labels = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4"))
 ggplot(a2_results, aes(x = Rho_pos, y = Power, color = Alpha)) +
   geom_line() +
   geom_hline(aes(yintercept = 80, color = "80% Power"), linetype = "dashed") +
   facet_grid(Rho_diff ~ N_pos) +
   scale_color_manual(
-    values = c("mediumpurple3", "seagreen4", "palevioletred2", "black"),
-    breaks = c("\u03B1 = 0.05/4", "\u03B1 = 0.05/6", "\u03B1 = 0.05/24", "80% Power")
+    values = c("palevioletred2", "seagreen4", "mediumpurple3", "black"),
+    breaks = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4", "80% Power")
   ) +
   labs(
     title = "Power vs Amyloid+ Correlation",
