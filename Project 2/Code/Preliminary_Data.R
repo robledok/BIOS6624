@@ -223,7 +223,7 @@ ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
     x = "Amyloid+ Correlation (\u03C1)",
     y = "Power (%)",
     color = "",
-    caption = "\u0394\u03C1 refers to the correlation of the amyloid+ group minus the correlation of the amyloid- group."
+    caption = "N+ refers to the sample size of the amyloid+ group. \u0394\u03C1 refers to the correlation of the amyloid+ group minus the correlation of the amyloid- group."
   ) +
   ylim(0, 100) +
   theme_bw() +
