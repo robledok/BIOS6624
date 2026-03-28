@@ -149,7 +149,7 @@ for (N_pos in N_pos_vals) {
   
   # Loop through correlation values
   for (rho_p in seq(0.2, 0.7, by = 0.1)) {
-    for (rho_n in seq(0.2, 0.7, by = 0.1)) {
+    for (rho_n in seq(0, 0.7, by = 0.1)) {
       
       # Skip invalid correlations (only keep rho_p > rho_n)
       if (rho_p > rho_n) {
@@ -189,12 +189,14 @@ a2_results$Alpha_label <- factor(a2_results$Alpha,
                            levels = c(0.00208, 0.00833, 0.0125),
                            labels = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4"))
 a2_results$Rho_label <- factor(a2_results$Rho_diff,
-                                 levels = c(0.1, 0.2, 0.3, 0.4, 0.5),
+                                 levels = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
                                  labels = c("\u0394\u03C1 = 0.1",
                                             "\u0394\u03C1 = 0.2",
                                             "\u0394\u03C1 = 0.3", 
                                             "\u0394\u03C1 = 0.4",
-                                            "\u0394\u03C1 = 0.5"))
+                                            "\u0394\u03C1 = 0.5",
+                                            "\u0394\u03C1 = 0.6",
+                                            "\u0394\u03C1 = 0.7"))
 a2_results$N_pos_label <- factor(a2_results$N_pos,
                                levels = c(50, 75, 88, 125, 150),
                                labels = c("N+ = 50",
@@ -203,7 +205,7 @@ a2_results$N_pos_label <- factor(a2_results$N_pos,
                                           "N+ = 125",
                                           "N+ = 150"))
 a2_results %>%
-  filter(Rho_diff < 0.5) %>%
+  filter(Rho_diff <= 0.5) %>%
 ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
   geom_line() +
   geom_hline(aes(yintercept = 80, color = "80% Power"), linetype = "dashed") +
@@ -220,7 +222,8 @@ ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
     title = "Power vs Amyloid+ Correlation",
     x = "Amyloid+ Correlation (\u03C1)",
     y = "Power (%)",
-    color = ""
+    color = "",
+    caption = "\u0394\u03C1 refers to the correlation of the amyloid+ group minus the correlation of the amyloid- group."
   ) +
   ylim(0, 100) +
   theme_bw() +
