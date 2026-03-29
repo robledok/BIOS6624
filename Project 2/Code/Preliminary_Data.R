@@ -354,8 +354,8 @@ for (N_pos in N_pos_vals) {
       Alpha = round(a, 5),
       N_pos = N_pos,
       N_neg = N_neg,
-      Rho_pos = round(rho_p_80, 3),
-      Rho_neg = round(rho_p_80 - delta, 3),
+      Rho_pos = round(rho_p_80, 2),
+      Rho_neg = round(rho_p_80 - delta, 2),
       Delta = delta
     ))
     }
