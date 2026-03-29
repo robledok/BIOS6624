@@ -54,7 +54,7 @@ cor_dat <- data.frame(
                         cor.test(dat_p2$cvlt_dff, dat_p2$cort_diff)$p.value)
 )
 
-# Used ChatGPT to help format
+# Creating Table 4 for the paper (Used ChatGPT to help format)
 cor_dat %>%
   dplyr::mutate(
     Estimate = round(as.numeric(Estimate), 3),
@@ -144,7 +144,7 @@ rho_row <- data.frame(
 final_df <- rbind(a1_results, rho_row)
 rownames(final_df) <- NULL
 
-# Creating Table 4 for the paper (used ChatGPT to help format)
+# Creating Table 5 for the paper (used ChatGPT to help format)
 final_df %>%
   slice(c(1:7, 12)) %>%
   kable(align = "lccc",
@@ -222,7 +222,7 @@ for (N_pos in N_pos_vals) {
   }
 }
 
-# Make sure Alpha is a factor with labels
+# Make sure Alpha and N positive are factors with labels
 a2_results$Alpha_label <- factor(a2_results$Alpha,
                            levels = c(0.00208, 0.00833, 0.0125),
                            labels = c("\u03B1 = 0.05/24", "\u03B1 = 0.05/6", "\u03B1 = 0.05/4"))
@@ -242,6 +242,8 @@ a2_results$N_pos_label <- factor(a2_results$N_pos,
                                           "N+ = 88", 
                                           "N+ = 125",
                                           "N+ = 150"))
+
+# Creating power figure (Figure 5)
 a2_results %>%
   filter(Rho_diff <= 0.5 & Rho_diff >= 0.3) %>%
 ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
@@ -266,3 +268,125 @@ ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
   ylim(0, 100) +
   theme_bw() +
   theme(legend.position = "bottom")
+
+# Finding what correlation for amyloid+ gives us at least 80% power (Used Claude to help)
+
+# Initializing dataframe to store results
+a2_power_80 <- data.frame()
+
+# Defining the deltas we are interested in based on figure 5 intersections
+a2_delta <- c(0.4, 0.5)
+
+# Loop through amyloid+ group sizes
+for (N_pos in N_pos_vals) {
+  
+  # Calculate amyloid- group size
+  N_neg <- 175 - N_pos
+  
+  # Calculate ratio between groups
+  n_ratio <- N_pos / N_neg
+  
+  # Loop through each delta
+  for (delta in a2_delta){
+    
+    # Loop through each alpha
+    for (a in alpha_vals){
+      
+      # Define our maximum rho values allowed
+      max_rho_p <- 0.7
+      max_rho_n <- max_rho_p - delta
+      
+      # Seeing if we achieve at least 80% power at rho_p = 0.7
+      max_power <- corr.2samp(
+        n1 = N_neg,
+        n.ratio = n_ratio,
+        rho1 = max_rho_n,
+        rho2 = max_rho_p,
+        alpha = a
+      )
+      
+      # If we don't achieve 80% power at that max rho, then skip since not achievable
+      if (max_power < 0.8)
+        next
+    
+    # Define our minimum rho values allowed
+    min_rho_p <- max(0.2, delta)
+    min_rho_n <- min_rho_p - delta
+    
+    # If rho_n isn't positive, skip
+    if (min_rho_n < 0)
+      next
+    
+    # Seeing if we achieve at least 80% power at rho_p = 0.2
+    min_power <- corr.2samp(
+      n1 = N_neg,
+      n.ratio = n_ratio,
+      rho1 = min_rho_n,
+      rho2 = min_rho_p,
+      alpha = a
+    )
+    
+    # If we achieve 80% power save that minimum rho
+    if (min_power >= 0.8){
+      rho_p_80 <- min_rho_p
+    }
+    # If we don't achieve 80% power find the optimal rho
+      else{
+        # Define our function
+        optimal_rho_p <- function(rho_p) {
+          rho_n <- rho_p - delta
+          corr.2samp(
+            n1 = N_neg,
+            n.ratio = n_ratio,
+            rho1 = rho_n,
+            rho2 = rho_p,
+            alpha = a
+          ) - 0.8
+        }
+        
+        # Use uniroot to find what root (rho) gives us 80% power
+        result <- uniroot(optimal_rho_p, interval = c(min_rho_p, max_rho_p), tol = 1e-6)
+        rho_p_80 <- result$root
+      }
+    
+    # Saving our results
+    a2_power_80 <- rbind(a2_power_80, data.frame(
+      Alpha = round(a, 5),
+      N_pos = N_pos,
+      N_neg = N_neg,
+      Rho_pos = round(rho_p_80, 3),
+      Rho_neg = round(rho_p_80 - delta, 3),
+      Delta = delta
+    ))
+    }
+  }
+}
+
+# Table 6 for paper (Used Claude to help format)
+a2_power_80 %>%
+  mutate(Alpha_label = paste0("\u03B1 = 0.05/", round(0.05 / Alpha, 0))) %>%
+  select(N_pos, Alpha_label, Delta, Rho_pos, Rho_neg) %>%
+  pivot_wider(
+    id_cols     = c(N_pos, Alpha_label),
+    names_from  = Delta,
+    values_from = c(Rho_pos, Rho_neg)
+  ) %>%
+  select(Alpha_label, Rho_pos_0.4, Rho_neg_0.4, Rho_pos_0.5, Rho_neg_0.5) %>%
+  mutate(across(where(is.numeric), ~ifelse(is.na(.), "\u2014", as.character(.)))) %>%
+  kable(
+    align = "lcccc",
+    col.names = c("Scenario", "Amyloid+ Correlation (\u03C1+)", 
+                  "Amyloid- Correlation (\u03C1-)", "Amyloid+ Correlation (\u03C1+)", 
+                  "Amyloid- Correlation (\u03C1-)"),
+    booktabs = TRUE
+  ) %>%
+  kable_styling(
+    full_width = FALSE,
+    bootstrap_options = c("condensed", "hover", "striped"),
+    position = "center"
+  ) %>%
+  row_spec(0, bold = TRUE, color = "black", background = "#c4d9f1") %>%
+  group_rows("N+ = 75", 1, 3) %>%
+  group_rows("N+ = 88", 4, 6) %>%
+  group_rows("N+ = 125", 7, 8) %>%
+  add_header_above(c(" " = 1, "\u0394\u03C1 = 0.4" = 2, "\u0394\u03C1 = 0.5" = 2), background = "#d9d9d9", color = "black") 
