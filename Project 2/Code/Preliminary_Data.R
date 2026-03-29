@@ -62,7 +62,7 @@ cor_dat %>%
   ) %>%
   kable(
     align = "lcc",
-    col.names = c("Variable Pair", "Correlation (r)", "p-value"),
+    col.names = c("Variable Pair", "Correlation (\u03C1)", "p-value"),
     booktabs = TRUE
   ) %>%
   kable_styling(
@@ -101,21 +101,59 @@ for (a in alpha_vals) {
   }
   
   # Defining column names
-  
   col_name <- paste0("Alpha_", round(a, 5))
   # Saving the power for each alpha column
   a1_results[[col_name]] <- power_vals * 100
 }
 
+# Finding what rho gives us 80% power (used Claude to help)
+
+# Initialize vector for our results
+rho_80 <- numeric(length(alpha_vals))
+
+# Loop through alpha values
+for (i in seq_along(alpha_vals)) {
+  a <- alpha_vals[i]
+  
+  # Define the function we want to solve
+  optimal_rho <- function(rho) {
+    corr.1samp(N = 175, rhoA = rho, alpha = a) - 0.80
+  }
+  
+  # Use uniroot to find what root (rho) gives us 80% power
+  result <- uniroot(optimal_rho, interval = c(0.001, 0.999), tol = 1e-6)
+  rho_80[i] <- result$root
+}
+
+power_80_df <- data.frame(
+  Alpha = alpha_vals,
+  Rho = round(rho_80, 2)
+)
+
+power_80_df <- t(power_80_df)
+
+# Convert power_80_df to a regular row to rbind
+rho_row <- data.frame(
+  Radj  = "\u03C1 for 80% Power",
+  Alpha_0.0125  = power_80_df["Rho", 1],
+  Alpha_0.00833 = power_80_df["Rho", 2],
+  Alpha_0.00208 = power_80_df["Rho", 3]
+)
+
+# Combine
+final_df <- rbind(a1_results, rho_row)
+rownames(final_df) <- NULL
+
 # Creating Table 4 for the paper (used ChatGPT to help format)
-a1_results %>%
-  slice(1:7) %>%
+final_df %>%
+  slice(c(1:7, 12)) %>%
   kable(align = "lccc",
-        col.names = c("Correlation", "\u03B1 = 0.05/4", "\u03B1 = 0.05/6", 
+        col.names = c("Correlation (\u03C1)", "\u03B1 = 0.05/4", "\u03B1 = 0.05/6", 
                       "\u03B1 = 0.05/24"),
         digits = 2,
         caption = "Table 4: Power Calculation for Aim 1") %>%
   row_spec(0, bold = TRUE, color = "black", background = "#c4d9f1") %>%
+  row_spec(8, bold = TRUE, color = "#2e6f40") %>%
   kable_styling(
     full_width = FALSE,
     bootstrap_options = c("condensed", "hover", "striped"),
@@ -132,7 +170,7 @@ a1_results %>%
 ##
 
 # List of values we are using
-N_pos_vals <- c(50, 75, 88, 125, 150)
+N_pos_vals <- c(25, 75, 88, 125, 150)
 alpha_vals <- c(0.05/4, 0.05/6, 0.05/24)
 
 # Initialize results data frame
@@ -198,14 +236,14 @@ a2_results$Rho_label <- factor(a2_results$Rho_diff,
                                             "\u0394\u03C1 = 0.6",
                                             "\u0394\u03C1 = 0.7"))
 a2_results$N_pos_label <- factor(a2_results$N_pos,
-                               levels = c(50, 75, 88, 125, 150),
-                               labels = c("N+ = 50",
+                               levels = c(25, 75, 88, 125, 150),
+                               labels = c("N+ = 25",
                                           "N+ = 75",
                                           "N+ = 88", 
                                           "N+ = 125",
                                           "N+ = 150"))
 a2_results %>%
-  filter(Rho_diff <= 0.5) %>%
+  filter(Rho_diff <= 0.5 & Rho_diff >= 0.3) %>%
 ggplot(aes(x = Rho_pos, y = Power, color = Alpha_label)) +
   geom_line() +
   geom_hline(aes(yintercept = 80, color = "80% Power"), linetype = "dashed") +
