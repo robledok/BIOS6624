@@ -375,9 +375,9 @@ a2_power_80 %>%
   mutate(across(where(is.numeric), ~ifelse(is.na(.), "\u2014", as.character(.)))) %>%
   kable(
     align = "lcccc",
-    col.names = c("Scenario", "Amyloid+ Correlation (\u03C1+)", 
-                  "Amyloid- Correlation (\u03C1-)", "Amyloid+ Correlation (\u03C1+)", 
-                  "Amyloid- Correlation (\u03C1-)"),
+    col.names = c("Scenario", "\u03C1+", 
+                  "\u03C1-", "\u03C1+", 
+                  "\u03C1-"),
     booktabs = TRUE
   ) %>%
   kable_styling(
@@ -389,4 +389,5 @@ a2_power_80 %>%
   group_rows("N+ = 75", 1, 3) %>%
   group_rows("N+ = 88", 4, 6) %>%
   group_rows("N+ = 125", 7, 8) %>%
+  column_spec(1:5, width = "7em") %>%
   add_header_above(c(" " = 1, "\u0394\u03C1 = 0.4" = 2, "\u0394\u03C1 = 0.5" = 2), background = "#d9d9d9", color = "black") 
