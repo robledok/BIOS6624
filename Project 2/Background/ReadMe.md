@@ -6,4 +6,4 @@ Details about the files:
   
 File | Description
 ---|---------------------------------------------------------------------
-  
+Project2_ResearchStrategy_Annotated.pdf | Project 2 assignment grant  
