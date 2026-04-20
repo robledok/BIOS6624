@@ -240,7 +240,7 @@ ggarrange(fem_age_plot, fem_sbp_plot, fem_diab_plot, fem_smoke_plot, fem_bmi_plo
 # Age
 male_age <- survfit(Surv(time_10yr, stroke_10yr)~age_grp, data=dat_p3_male)
 male_age_plot <- ggsurvplot(male_age, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-                           palette = c("#3F6D9E", "#ed6779"),
+                           palette = c("#ed6779", "#3F6D9E"),
                            legend = "bottom",
                            xlab = "Time in Days",
                            title = "Age (years)",
@@ -256,7 +256,7 @@ male_age_plot <- ggsurvplot(male_age, conf.int=FALSE, censor=F, xlim=c(0, 10*365
 # SBP
 male_sbp <- survfit(Surv(time_10yr, stroke_10yr)~sbp_grp, data=dat_p3_male)
 male_sbp_plot <- ggsurvplot(male_sbp, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-                           palette = c("#3F6D9E", "#ed6779"),                
+                           palette = c("#ed6779", "#3F6D9E"),                
                            legend = "bottom",
                            legend.title = "",
                            xlab = "Time in Days",
@@ -304,12 +304,12 @@ male_smoke_plot <- ggsurvplot(male_smoke, conf.int=FALSE, censor=F, xlim=c(0, 10
 # BMI
 male_bmi <- survfit(Surv(time_10yr, stroke_10yr)~bmi_grp, data=dat_p3_male)
 male_bmi_plot <- ggsurvplot(male_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-                           palette = c("#3F6D9E", "#ed6779"),  
+                           palette = c("#ed6779", "#3F6D9E"),  
                            legend = "bottom",
                            legend.title = "",
                            xlab = "Time in Days",
                            title = "BMI (kg/m^2)",
-                           legend.labs = c("≤ Median (25.45)", "> Median (25.45)"))$plot +
+                           legend.labs = c("> Median (25.45)", "≤ Median (25.45)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -320,12 +320,12 @@ male_bmi_plot <- ggsurvplot(male_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365
 # Cholesterol
 male_chol <- survfit(Surv(time_10yr, stroke_10yr)~chol_grp, data=dat_p3_male)
 male_chol_plot <- ggsurvplot(male_chol, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00), 
-                            palette = c("#3F6D9E", "#ed6779"),  
+                            palette = c("#ed6779", "#3F6D9E"),  
                             legend = "bottom",
                             legend.title = "",
                             xlab = "Time in Days",
                             title = "Serum Total Cholesterol (mg/dL)",
-                            legend.labs = c("≤ Median (234)", "> Median (234)"))$plot +
+                            legend.labs = c("> Median (234)", "≤ Median (234)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
