@@ -391,6 +391,10 @@ vars <- c(
 
 dat_cox_fem <- dat_p3_fem[complete.cases(dat_p3_fem[, vars]), ]
 
+# Number of observations retained
+nrow(dat_cox_fem)
+nrow(dat_p3_fem) - nrow(dat_cox_fem)
+
 # Base model
 fem_base_mod <- coxph(
   Surv(time_10yr, stroke_10yr) ~ AGE + DIABETES + SYSBP,
@@ -429,6 +433,10 @@ vars <- c(
 )
 
 dat_cox_male <- dat_p3_male[complete.cases(dat_p3_male[, vars]), ]
+
+# Number of observations retained
+nrow(dat_cox_male)
+nrow(dat_p3_male) - nrow(dat_cox_male)
 
 # Base model
 male_base_mod <- coxph(
