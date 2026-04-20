@@ -96,12 +96,12 @@ dat_p3_male <- dat_p3_base %>% filter(SEX == "Male")
 # Age
 fem_age <- survfit(Surv(time_10yr, stroke_10yr)~age_grp, data=dat_p3_fem)
 fem_age_plot <- ggsurvplot(fem_age, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-           palette = c("#3F6D9E", "#ed6779"),
+           palette = c("#ed6779", "#3F6D9E"),
            legend = "bottom",
            xlab = "Time in Days",
            title = "Age (years)",
            legend.title = "",
-           legend.labs = c("≤ Median (49)", "> Median (49)"))$plot+
+           legend.labs = c("> Median (49)", "≤ Median (49)"))$plot+
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -112,12 +112,12 @@ fem_age_plot <- ggsurvplot(fem_age, conf.int=FALSE, censor=F, xlim=c(0, 10*365.2
 # SBP
 fem_sbp <- survfit(Surv(time_10yr, stroke_10yr)~sbp_grp, data=dat_p3_fem)
 fem_sbp_plot <- ggsurvplot(fem_sbp, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-           palette = c("#3F6D9E", "#ed6779"),                
+           palette = c("#ed6779", "#3F6D9E"),              
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
            title = "Systolic Blood Pressure (mmHg)",
-           legend.labs = c("Not High (< 160)", "High (≥ 160)"))$plot +
+           legend.labs = c("High (≥ 160)", "Not High (< 160)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -128,7 +128,7 @@ fem_sbp_plot <- ggsurvplot(fem_sbp, conf.int=FALSE, censor=F, xlim=c(0, 10*365.2
 # Diabetic
 fem_diab <- survfit(Surv(time_10yr, stroke_10yr)~DIABETES, data=dat_p3_fem)
 fem_diab_plot <- ggsurvplot(fem_diab, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-           palette = c("#3F6D9E", "#ed6779"),  
+           palette = c("#3F6D9E", "#ed6779"),
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
@@ -144,7 +144,7 @@ fem_diab_plot <- ggsurvplot(fem_diab, conf.int=FALSE, censor=F, xlim=c(0, 10*365
 # Smoking Status
 fem_smoke <- survfit(Surv(time_10yr, stroke_10yr)~CURSMOKE, data=dat_p3_fem)
 fem_smoke_plot <- ggsurvplot(fem_smoke, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-           palette = c("#3F6D9E", "#ed6779"),  
+           palette = c("#3F6D9E", "#ed6779"),
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
@@ -160,12 +160,12 @@ fem_smoke_plot <- ggsurvplot(fem_smoke, conf.int=FALSE, censor=F, xlim=c(0, 10*3
 # BMI
 fem_bmi <- survfit(Surv(time_10yr, stroke_10yr)~bmi_grp, data=dat_p3_fem)
 fem_bmi_plot <- ggsurvplot(fem_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00),
-           palette = c("#3F6D9E", "#ed6779"),  
+           palette = c("#ed6779", "#3F6D9E"),
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
            title = "BMI (kg/m^2)",
-           legend.labs = c("≤ Median (25.45)", "> Median (25.45)"))$plot +
+           legend.labs = c("> Median (25.45)", "≤ Median (25.45)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -176,12 +176,12 @@ fem_bmi_plot <- ggsurvplot(fem_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365.2
 # Cholesterol
 fem_chol <- survfit(Surv(time_10yr, stroke_10yr)~chol_grp, data=dat_p3_fem)
 fem_chol_plot <- ggsurvplot(fem_chol, conf.int=FALSE, censor=F, xlim=c(0, 10*365.25), ylim = c(0.8, 1.00), 
-           palette = c("#3F6D9E", "#ed6779"),  
+           palette = c("#ed6779", "#3F6D9E"),
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
            title = "Serum Total Cholesterol (mg/dL)",
-           legend.labs = c("≤ Median (234)", "> Median (234)"))$plot +
+           legend.labs = c("> Median (234)", "≤ Median (234)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -245,7 +245,7 @@ male_age_plot <- ggsurvplot(male_age, conf.int=FALSE, censor=F, xlim=c(0, 10*365
                            xlab = "Time in Days",
                            title = "Age (years)",
                            legend.title = "",
-                           legend.labs = c("≤ Median (49)", "> Median (49)"))$plot+
+                           legend.labs = c("> Median (49)", "≤ Median (49)"))$plot+
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
@@ -261,7 +261,7 @@ male_sbp_plot <- ggsurvplot(male_sbp, conf.int=FALSE, censor=F, xlim=c(0, 10*365
                            legend.title = "",
                            xlab = "Time in Days",
                            title = "Systolic Blood Pressure (mmHg)",
-                           legend.labs = c("Not High (< 160)", "High (≥ 160)"))$plot +
+                           legend.labs = c("High (≥ 160)" ,"Not High (< 160)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
     legend.text = element_text(size = 10),
