@@ -86,4 +86,6 @@ dat_p3_interest %>%
 
 # Creating Kaplan-Meier curve 
 surv_fit <- survfit(Surv(time_10yr, stroke_10yr)~SEX, data=dat_p3_interest)
+surv_fit
+summary(surv_fit, times = (0:10)*365.25)
 ggsurvplot(surv_fit, conf.int=TRUE, censor=F, xlim=c(0, max(dat_p3_interest$time_10yr)), ylim = c(0.95, 1.00), legend = "bottom")
