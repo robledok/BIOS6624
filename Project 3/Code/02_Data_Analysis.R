@@ -591,7 +591,7 @@ fem_health_surv <- survfit(fem_mod, newdata = fem_health)
 fem_health_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Healthy", 3),
-  surv_est = c(summary(fem_health_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(fem_health_surv, times = 10*365.25)$surv)*100)
 )
 
 # High blood pressure group
@@ -606,7 +606,7 @@ fem_high_sbp_surv <- survfit(fem_mod, newdata = fem_high_sbp)
 fem_high_sbp_surv_dat <- data.frame(
   age = ages,
   scenario = rep("High Systolic Blood Pressure", 3),
-  surv_est = c(summary(fem_high_sbp_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(fem_high_sbp_surv, times = 10*365.25)$surv)*100)
 )
 
 # Diabetic group
@@ -621,7 +621,7 @@ fem_diab_surv <- survfit(fem_mod, newdata = fem_diab)
 fem_diab_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Diabetic", 3),
-  surv_est = c(summary(fem_diab_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(fem_diab_surv, times = 10*365.25)$surv)*100)
 )
 
 # High SBP and Diabetic group
@@ -636,7 +636,7 @@ fem_high_diab_surv <- survfit(fem_mod, newdata = fem_high_diab)
 fem_high_diab_surv_dat <- data.frame(
   age = ages,
   scenario = rep("High Systolic Blood Pressure and Diabetic", 3),
-  surv_est = c(summary(fem_high_diab_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(fem_high_diab_surv, times = 10*365.25)$surv)*100)
 )
 
 # Smoker group
@@ -651,7 +651,7 @@ fem_smoke_surv <- survfit(fem_mod, newdata = fem_smoke)
 fem_smoke_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Smoker", 3),
-  surv_est = c(summary(fem_smoke_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(fem_smoke_surv, times = 10*365.25)$surv)*100)
 )
 
 # Combining into one dataframe:
@@ -694,7 +694,7 @@ male_health_surv <- survfit(male_mod, newdata = male_health)
 male_health_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Healthy", 3),
-  surv_est = c(summary(male_health_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(male_health_surv, times = 10*365.25)$surv)*100)
 )
 
 # High blood pressure group
@@ -709,7 +709,7 @@ male_high_sbp_surv <- survfit(male_mod, newdata = male_high_sbp)
 male_high_sbp_surv_dat <- data.frame(
   age = ages,
   scenario = rep("High Systolic Blood Pressure", 3),
-  surv_est = c(summary(male_high_sbp_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(male_high_sbp_surv, times = 10*365.25)$surv)*100)
 )
 
 # Diabetic group
@@ -724,7 +724,7 @@ male_diab_surv <- survfit(male_mod, newdata = male_diab)
 male_diab_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Diabetic", 3),
-  surv_est = c(summary(male_diab_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(male_diab_surv, times = 10*365.25)$surv)*100)
 )
 
 # High SBP and Diabetic group
@@ -739,7 +739,7 @@ male_high_diab_surv <- survfit(male_mod, newdata = male_high_diab)
 male_high_diab_surv_dat <- data.frame(
   age = ages,
   scenario = rep("High Systolic Blood Pressure and Diabetic", 3),
-  surv_est = c(summary(male_high_diab_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(male_high_diab_surv, times = 10*365.25)$surv)*100)
 )
 
 # Smoker group
@@ -754,7 +754,7 @@ male_smoke_surv <- survfit(male_mod, newdata = male_smoke)
 male_smoke_surv_dat <- data.frame(
   age = ages,
   scenario = rep("Smoker", 3),
-  surv_est = c(summary(male_smoke_surv, times = 10*365.25)$surv*100)
+  surv_est = c((1-summary(male_smoke_surv, times = 10*365.25)$surv)*100)
 )
 
 # Combining into one dataframe:
@@ -784,7 +784,7 @@ surv_wide %>%
   kable(digits = 2,
         col.names = c("Risk Profile", "40 Years Old", "50 Years Old", "60 Years Old"),
         align = 'lccc',
-        caption = "<b>Table 3.</b> 10-year stroke-free survival probabilities (%) by risk profile, age, and sex in the Framingham Heart Study",
+        caption = "<b>Table 3.</b> Estimated 10-year stroke probabilities (%) by risk profile, age, and sex in the Framingham Heart Study",
         escape = F) %>%
   kable_classic(full_width = F, html_font = "Cambria") %>%
   kable_styling(bootstrap_options = "condensed") %>%
