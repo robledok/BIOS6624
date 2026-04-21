@@ -818,7 +818,7 @@ period_change_dat %>%
     digits = 2,
     col.names = c(
       "",
-      "SBP (mmHg)",
+      "SBP",
       "SBP % Change",
       "Diabetes",
       "Diabetes % Change"
@@ -831,6 +831,6 @@ period_change_dat %>%
   group_rows("Females", 1, 3) %>%
   group_rows("Males", 4, 6) %>%
   footnote(
-    general = "Values are presented as mean (SD) or n (%). Percent change reflects relative change from the previous study period. Diabetes represents those who are diabetic.",
+    general = "Values are presented as mean (SD) or n (%). Percent change reflects relative change from the previous study period. SBP refers to systolic blood pressure (mmHg) and diabetes represents those who are diabetic.",
     general_title = ""
   )
