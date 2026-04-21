@@ -90,7 +90,7 @@ dat_p3_fem <- dat_p3_base %>% filter(SEX == "Female")
 dat_p3_male <- dat_p3_base %>% filter(SEX == "Male")
 
 ##*******************************************************************
-## ------------------ Kaplan-Meier Curves for Females  ----------------------
+## ------------------ Kaplan-Meier Curves for Females (Figure 1)  ----------------------
 ##*******************************************************************
 ##
 
@@ -234,7 +234,7 @@ ggarrange(fem_age_plot, fem_sbp_plot, fem_diab_plot, fem_smoke_plot, fem_bmi_plo
   )
 
 ##*******************************************************************
-## ------------------ Kaplan-Meier Curves for Males  ----------------------
+## ------------------ Kaplan-Meier Curves for Males (Figure 2)  ----------------------
 ##*******************************************************************
 ##
 
@@ -488,7 +488,7 @@ rms::vif(fem_mod)
 rms::vif(male_mod)
 
 ##*******************************************************************
-## ------------------ Results Table ----------------------
+## ------------------ Results Table (Table 2) ----------------------
 ##*******************************************************************
 ## 
 
@@ -754,7 +754,7 @@ male_surv_wide <- male_all_surv_dat %>%
   
   
 ##*******************************************************************
-## ------------------ Risk Profiles Table ----------------------
+## ------------------ Risk Profiles Table (Table 3) ----------------------
 ##*******************************************************************
 ##  
 surv_wide <- rbind(fem_surv_wide, male_surv_wide)
@@ -775,7 +775,7 @@ surv_wide %>%
 
 
 ##*******************************************************************
-## ------------------ Looking at Covariates by Period for Each Sex ----------------------
+## ------------------ Looking at Covariates by Period for Each Sex (Table 4) ----------------------
 ##*******************************************************************
 ##
 
@@ -822,7 +822,8 @@ period_change_dat %>%
       "SBP % Change",
       "Diabetes",
       "Diabetes % Change"
-    )
+    ),
+    caption = c("<b>Table 4.</b> Changes in systolic blood pressure and diabetes prevalence across study periods by sex, with percent change estimates, in the Framingham Heart Study.")
   ) %>%
   kable_classic(full_width = F, html_font = "Cambria") %>%
   kable_styling(bootstrap_options = "condensed") %>%
