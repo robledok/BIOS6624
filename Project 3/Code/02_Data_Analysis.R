@@ -10,6 +10,7 @@ library(grid)
 library(MASS)
 library(dplyr)
 library(kableExtra)
+library(scales)
 
 ## Reading in the data
 dat_p3 <- read.csv("DataProcessed/dat_p3_clean_kr.csv")
@@ -778,19 +779,57 @@ surv_wide %>%
 ##*******************************************************************
 ##
 
-dat_p3 %>%
-  mutate(period = paste("Period", PERIOD)) %>%
-  tbl_strata(
-    strata = SEX,
-    .tbl_fun =
-      ~ .x %>%
-      tbl_summary(by = period,
-                  include = c(SYSBP, DIABETES),
-                  missing_text = "Missing",
-                  label = list(
-                    SYSBP ~ "Systolic Blood Pressure (mmHg)",
-                    DIABETES ~ "Diabetes"
-                  ),
-                  statistic = list(all_continuous() ~ "{mean} ({sd})")),
-    .header = "**{strata}**"
+# Creating a summary data frame
+period_sum_dat <- dat_p3 %>%
+  group_by(SEX, PERIOD) %>%
+  summarise(
+    n_total = n(),
+    mean_sbp = mean(SYSBP, na.rm = T),
+    sd_sbp = sd(SYSBP, na.rm = T),
+    n_diab = sum(DIABETES == 'Diabetic', na.rm = T),
+    tot_diab = sum(!is.na(DIABETES)),
+    diab_prop = n_diab/tot_diab,
+    
+    .groups = "drop"
+  )
+
+# Calculating percent change between periods
+period_change_dat <- period_sum_dat %>%
+  arrange(SEX, PERIOD) %>%
+  group_by(SEX) %>%
+  mutate(
+    sbp_pct_change = paste0(round(100 * (mean_sbp - lag(mean_sbp)) / lag(mean_sbp), 2), "%"), # Used ChatGPT to help
+    diab_pct_change  = paste0(round(100 * (diab_prop - lag(diab_prop)) / lag(diab_prop), 2), "%") # Used ChatGPT to help
+  ) %>%
+  ungroup()
+
+period_change_dat %>%
+  mutate(
+    SBP = paste0(round(mean_sbp,0), " (", round(sd_sbp,0), ")"),
+    Diabetes = paste0(n_diab, " (", round(100 * diab_prop,1), "%)"),
+    Period = paste0("Period ", PERIOD, " (N=", comma(n_total), ")"),
+    sbp_pct_change = ifelse(sbp_pct_change == "NA%", "–", sbp_pct_change),
+    
+    diab_pct_change = ifelse(diab_pct_change == "NA%", "–", diab_pct_change)
+  )  %>%
+  dplyr::select(Period, SBP, sbp_pct_change, Diabetes, diab_pct_change) %>%
+  kable(
+    align = 'lcccc',
+    digits = 2,
+    col.names = c(
+      "",
+      "SBP (mmHg)",
+      "SBP % Change",
+      "Diabetes",
+      "Diabetes % Change"
+    )
+  ) %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  kable_styling(bootstrap_options = "condensed") %>%
+  row_spec(0, bold = T) %>%
+  group_rows("Females", 1, 3) %>%
+  group_rows("Males", 4, 6) %>%
+  footnote(
+    general = "Values are presented as mean (SD) or n (%). Percent change reflects relative change from the previous study period. Diabetes represents those who are diabetic.",
+    general_title = ""
   )
