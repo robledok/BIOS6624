@@ -65,7 +65,7 @@ colnames(tbl1_df) <- c(
 
 tbl1_df %>%
   mutate(across(everything(), ~ ifelse(is.na(.), "", .))) %>%
-  slice(-c(9, 19, 12, 23)) %>%
+  slice(-c(4, 9, 19, 12, 23)) %>%
   kable(
     align = "lcccc",
     escape = F,
@@ -80,7 +80,7 @@ tbl1_df %>%
   )) %>%
   kable_classic(full_width = F, html_font = "Cambria") %>%
   kable_styling(bootstrap_options = "condensed") %>%
-  row_spec(c(4, 8, 10, 12, 14, 16, 17, 19), extra_css = "padding-left: 20px;") %>%
+  row_spec(c(3, 7, 9, 11, 13, 15, 16, 18), extra_css = "padding-left: 20px;") %>%
   footnote(
     general = "Values are presented as mean (SD) for continuous variables and N (%) for categorical variables.",
     general_title = ""
