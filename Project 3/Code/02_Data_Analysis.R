@@ -186,7 +186,7 @@ fem_bmi_plot <- ggsurvplot(fem_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365.2
            legend = "bottom",
            legend.title = "",
            xlab = "Time in Days",
-           title = "BMI (kg/m^2)",
+           title = "Body Mass Index (kg/m²)",
            legend.labs = c("> Median (25.45)", "≤ Median (25.45)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
@@ -330,7 +330,7 @@ male_bmi_plot <- ggsurvplot(male_bmi, conf.int=FALSE, censor=F, xlim=c(0, 10*365
                            legend = "bottom",
                            legend.title = "",
                            xlab = "Time in Days",
-                           title = "BMI (kg/m^2)",
+                           title = "Body Mass Index (kg/m²)",
                            legend.labs = c("> Median (25.45)", "≤ Median (25.45)"))$plot +
   theme(
     plot.title = element_text(size = 10, hjust = 0.5),
