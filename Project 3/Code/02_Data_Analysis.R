@@ -45,7 +45,7 @@ tbl1_df <- dat_p3_base %>%
                 SYSBP ~ "Systolic Blood Pressure (mmHg)",
                 DIABETES ~ "Diabetes",
                 CURSMOKE ~ "Smoking Status",
-                BMI ~ "BMI (kg/m²)",
+                BMI ~ "Body Mass Index (kg/m²)",
                 TOTCHOL ~ "Serum Total Cholesterol (mg/dL) ",
                 BPMEDS ~ "Anti-Hypertensive Medication",
                 PREVCHD ~ "Prevalent Coronary Heart Disease",
