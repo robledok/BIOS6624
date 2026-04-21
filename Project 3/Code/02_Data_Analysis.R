@@ -1,8 +1,6 @@
 ## Loading packages
 library(tidyverse)
 library(gtsummary)
-library(flextable)
-library(officer)
 library(survival)
 library(survminer)
 library(ggpubr)
@@ -35,10 +33,10 @@ dat_p3_base$PREVCHD <- relevel(factor(dat_p3_base$PREVCHD), ref = "Free of disea
 ## ------------------ Table 1  ----------------------
 ##*******************************************************************
 ##
-dat_p3_base$label_stoke_10yr <- factor(dat_p3_base$stroke_10yr, levels = c(0, 1), labels = c("No Stoke", "Stroke"))
+dat_p3_base$label_stoke_10yr <- factor(dat_p3_base$stroke_10yr, levels = c(0, 1), labels = c("No Stroke", "Stroke"))
 dat_p3_base$label_stoke_10yr <- relevel(factor(dat_p3_base$label_stoke_10yr), ref = "Stroke")
 
-tbl1 <- dat_p3_base %>%
+tbl1_df <- dat_p3_base %>%
   tbl_summary(by = SEX,
               include = c(time_10yr, label_stoke_10yr, AGE, SYSBP, DIABETES, CURSMOKE, BMI, TOTCHOL, BPMEDS, PREVCHD),
               missing_text = "Missing",
@@ -47,24 +45,47 @@ tbl1 <- dat_p3_base %>%
                 SYSBP ~ "Systolic Blood Pressure (mmHg)",
                 DIABETES ~ "Diabetes",
                 CURSMOKE ~ "Smoking Status",
-                BMI ~ "BMI (kg/m^2)",
+                BMI ~ "BMI (kg/m²)",
                 TOTCHOL ~ "Serum Total Cholesterol (mg/dL) ",
                 BPMEDS ~ "Anti-Hypertensive Medication",
                 PREVCHD ~ "Prevalent Coronary Heart Disease",
-                time_10yr ~ "10-Year Follow-up Time (days)",
-                label_stoke_10yr ~ "Incident Stroke During Follow-up"
+                time_10yr ~ "10-Year Stroke-Free Survival (days)",
+                label_stoke_10yr ~ "Incident Stroke During 10-Year Period"
               ),
               statistic = list(all_continuous() ~ "{mean} ({sd})")) %>%
-  add_overall(last = TRUE)
+  add_overall(last = TRUE) %>%
+  as_tibble()
 
-# Convert to flextable
-tbl1_flex <- as_flex_table(tbl1)
+colnames(tbl1_df) <- c(
+  "$\\textbf{Characteristic}$",
+  "(N = 2,472)",
+  "(N = 1,930)",
+  "(N = 4,402)"
+)
 
-# Save to Word document
-doc <- read_docx() %>%
-  body_add_flextable(tbl1_flex)
-
-print(doc, target = "Dissemination/Table1.docx")
+tbl1_df %>%
+  mutate(across(everything(), ~ ifelse(is.na(.), "", .))) %>%
+  slice(-c(9, 19, 12, 23)) %>%
+  kable(
+    align = "lcccc",
+    escape = F,
+    booktabs = T,
+    caption = "<b>Table 1.</b> Baseline characteristics of the Framingham Heart Study"
+  ) %>%
+  add_header_above(c(
+    " " = 1,
+    "$\\textbf{Female}$" = 1,
+    "$\\textbf{Male}$" = 1,
+    "$\\textbf{Overall}$" = 1
+  )) %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  kable_styling(bootstrap_options = "condensed") %>%
+  row_spec(c(4, 8, 10, 12, 14, 16, 17, 19), extra_css = "padding-left: 20px;") %>%
+  footnote(
+    general = "Values are presented as mean (SD) for continuous variables and N (%) for categorical variables.",
+    general_title = ""
+  )
+  
 
 ##*******************************************************************
 ## ------------------ Dichotimizing Continuous Variables for Kaplan-Meier Curves  ----------------------
