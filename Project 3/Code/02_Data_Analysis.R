@@ -792,7 +792,11 @@ surv_wide %>%
   column_spec(2:4, width = "8em") %>%
   row_spec(0, bold = T) %>%
   group_rows("Females", 1, 5) %>%
-  group_rows("Males", 6, 10)
+  group_rows("Males", 6, 10) %>%
+  footnote(
+    general = "Predictions were based on sex-specific median SBP values within each category (males: 127 and 171 mmHg; females: 125 and 175 mmHg for low/high SBP).",
+    general_title = ""
+  )
 
 
 ##*******************************************************************
