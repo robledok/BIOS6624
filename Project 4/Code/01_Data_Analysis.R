@@ -5,6 +5,7 @@ library(parallel)
 library(hdrm)
 library(glmnet)
 library(Matrix)
+library(tidyverse)
 
 ##*******************************************************************
 ## ------------------ Results Extraction Function (Carter's Notes) ----------------------
