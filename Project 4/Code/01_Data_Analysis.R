@@ -7,6 +7,63 @@ library(glmnet)
 library(Matrix)
 
 ##*******************************************************************
+## ------------------ Results Extraction Function (Carter's Notes) ----------------------
+##*******************************************************************
+##
+
+harvest <- function(model, betas, alpha = 0.05) {
+  # Extract model results
+  estimates <- as.data.frame(summary(model)$coefficients) 
+  # Add variable names as a column
+  estimates <- within(estimates, {
+    betas <- row.names(estimates)
+  })
+  # Find 95% confidence intervals
+  CIs <- as.data.frame(confint.default(model, level = 1-alpha))
+  names(CIs) <- c('LCL','UCL')
+  # Add variable names as a column
+  CIs <- within(CIs, {
+    param <- row.names(CIs)
+  })
+  # Defining our variable names
+  var_names <- sprintf("V%02d", 1:length(betas))
+  # Combing results into dataframe
+  res_dat <- data.frame(
+    variables = var_names,
+    true_values = betas
+  ) %>%
+    # Adding new variables
+    within({
+      # Defining what it means to be selected (if selected 1, if not 0)
+      selected <- ifelse(variables %in% row.names(estimates), 1, 0)
+      # Defining significance (if significant < 0.05 characterize as 1, if not 0)
+      signif   <- ifelse(variables %in% row.names(estimates[estimates[,4] < alpha,]), 1, 0)
+      # Defining our true non zero betas (1 if true non zero, 0 if not)
+      true_non_zero <- ifelse(variables %in% sprintf("V%02d", 1:5), 1, 0)
+    }) %>%
+    # Merge confidence intervals into the results dataframe
+    merge(CIs,
+          by.x = 'variables',
+          by.y = 'betas'
+          ,all.x = T) %>%
+    # Adding new variable
+    within({
+      # Defining what it means to be covered
+      covered <- ifelse(LCL <= true_values & true_values <= UCL, 1, 0)
+    })
+  # If a true non-zero variable was NOT selected, coverage should count as failure (0)
+  res_dat[is.na(res_dat$covered) == T & 
+            res_dat$selected == 0 & 
+            res_dat$true_non_zero == 1,'covered'] <- 0 
+  # If a true zero variable was NOT selected, coverage should count as success (1)
+  res_dat[is.na(res_dat$covered) == T & 
+            res_dat$selected == 0 & 
+            res_dat$true_non_zero == 0,'covered'] <- 1 
+  # Returning results
+  return(res_dat)
+}
+
+##*******************************************************************
 ## ------------------ Function to for one simulation ----------------------
 ##*******************************************************************
 ##
@@ -36,10 +93,10 @@ simulate_func <- function(n, rho){
                      trace = 0,
                      k =  qchisq(1 - 0.05, 1)
   )
-  # Creating results dataframe for p-value selection (from Carter's notes)
-  pval_res <- harvest(model = pval_selec,  # result model object from the reduction
-                      betas   = true_beta,       # simulation target betas
-                      alpha   = 0.05        # criteria for coverage and error computation
+  # Harvest results
+  pval_res <- harvest(model = pval_selec,  
+                      betas   = true_beta,  
+                      alpha   = 0.05       
   )
   pval_res$method <- 'p-value'
   pval_res$n      <- n
@@ -53,7 +110,7 @@ simulate_func <- function(n, rho){
                      trace = 0,
                      k =  2
   )
-  # Creating results dataframe for AIC selection
+  # Harvest results
   aic_res <- harvest(model = aic_selec,  
                       betas   = true_beta,       
                       alpha   = 0.05       
@@ -70,7 +127,7 @@ simulate_func <- function(n, rho){
                     trace = 0,
                     k =  log(nrow(dat))
   )
-  # Creating results dataframe for BIC selection
+  # Harvest results
   bic_res <- harvest(model = bic_selec,  
                      betas   = true_beta,       
                      alpha   = 0.05       
