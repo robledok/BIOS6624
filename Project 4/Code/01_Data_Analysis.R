@@ -388,7 +388,6 @@ res_variable <- simres %>%
   summarize(
     bias     = mean(estimate - true_values, na.rm = TRUE),
     coverage = mean(covered)*100,
-    mse      = mean((estimate - true_values)^2, na.rm = TRUE),
     .groups  = "drop"
   )
 
