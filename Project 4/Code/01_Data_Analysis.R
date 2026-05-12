@@ -444,6 +444,42 @@ res_variable %>%
   labs(x = "Variable", y = "Method", fill = "Coverage (%)") +
   theme(legend.position = "bottom")
 
+##*******************************************************************
+## ------------------ Selection Frequency  ----------------------
+##*******************************************************************
+##
+selection_freq <- simres %>%
+  group_by(method, n, rho, variables, true_values) %>%
+  summarize(
+    selection_rate = mean(selected == 1) * 100,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    method    = factor(method, levels = method_levels),
+    true_zero = ifelse(true_values == 0, "Null (β = 0)", "Signal (β ≠ 0)")
+  )
+
+selection_freq %>%
+  ggplot(aes(x = variables, y = method, fill = selection_rate)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(selection_rate, 1)), size = 2.5) +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_gradient2(
+    low = "#F9B0CF",
+    mid = "#FEFFD6",
+    high = "#afd8a9",
+    midpoint = 50,
+    limits = c(0, 100)
+  ) +
+  geom_vline(xintercept = 5.5, linetype = "dashed", color = "black") +  
+  theme_bw() +
+  labs(
+    x     = "Variable",
+    y     = "Method",
+    fill  = "Selection Rate (%)"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "bottom")
 
 ##*******************************************************************
 ## ------------------ Type I and II Error, FPR, and TPR  ----------------------
