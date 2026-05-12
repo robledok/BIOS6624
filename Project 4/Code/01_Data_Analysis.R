@@ -255,3 +255,59 @@ simulate_func <- function(n, rho){
   return(selec_results)
   
 }
+
+##*******************************************************************
+## ------------------ Matrix for Scenarios ----------------------
+##*******************************************************************
+##
+scenarios <- expand.grid(
+  n = c(250, 500),
+  rho = c(0, 0.35, 0.7)
+)
+
+##*******************************************************************
+## ------------------ Function to Run Many Simulations  ----------------------
+##*******************************************************************
+##
+
+# From Carter's notes
+run_sims <- function(scenario){
+  # Make sure profile has only 1 row
+  stopifnot(nrow(scenario) == 1)
+  # Create an empty list to store results
+  res <- list()
+  # Repeat the simulation 1000 times
+  for(iter in 1:1000) {
+    # Run one simulation
+    tmp <- simulate_func(
+      n   = scenario$n,
+      rho = scenario$rho
+    )
+    # Save which simulation number this is
+    tmp$iter <- iter
+    # Store the result
+    res[[iter]] <- tmp
+  }
+  # Combine all simulation results into one dataframe
+  res <- do.call("rbind", res)
+  # Return final results
+  return(res)
+}
+
+##*******************************************************************
+## ------------------ Running Simulations in Parallel  ----------------------
+##*******************************************************************
+##
+
+n_scenarios <- nrow(scenarios)
+plan(multisession, workers = n_scenarios)
+set.seed(6624)
+system.time({
+  simres <- future_lapply (1:n_scenarios, function(i){
+    run_sims(scenario = scenarios[i,])
+  }
+  ,future.seed=TRUE)
+})
+simres <- do.call('rbind', simres)
+# stop the cluster
+plan(sequential)
