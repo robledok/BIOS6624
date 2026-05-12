@@ -5,7 +5,10 @@ library(parallel)
 library(hdrm)
 library(glmnet)
 library(Matrix)
+library(forcats)
 library(tidyverse)
+library(ggplot2)
+library(RColorBrewer)
 
 ##*******************************************************************
 ## ------------------ Results Extraction Function (Carter's Notes) ----------------------
@@ -24,7 +27,7 @@ harvest <- function(model, betas, alpha = 0.05) {
   names(CIs) <- c('LCL','UCL')
   # Add variable names as a column
   CIs <- within(CIs, {
-    param <- row.names(CIs)
+    betas <- row.names(CIs)
   })
   # Defining our variable names
   var_names <- sprintf("V%02d", 1:length(betas))
@@ -45,8 +48,8 @@ harvest <- function(model, betas, alpha = 0.05) {
     # Merge confidence intervals into the results dataframe
     merge(CIs,
           by.x = 'variables',
-          by.y = 'betas'
-          ,all.x = T) %>%
+          by.y = 'betas',
+          all.x = T) %>%
     # Adding new variable
     within({
       # Defining what it means to be covered
@@ -60,6 +63,10 @@ harvest <- function(model, betas, alpha = 0.05) {
   res_dat[is.na(res_dat$covered) == T & 
             res_dat$selected == 0 & 
             res_dat$true_non_zero == 0,'covered'] <- 1 
+  # Adding estimates to data
+  res_dat$estimate <- estimates$Estimate[
+    match(res_dat$variables, estimates$betas)
+  ]
   # Returning results
   return(res_dat)
 }
@@ -133,7 +140,7 @@ simulate_func <- function(n, rho){
                      betas   = true_beta,       
                      alpha   = 0.05       
   )
-  bic_res$method <- 'AIC'
+  bic_res$method <- 'BIC'
   bic_res$n      <- n
   bic_res$rho    <- rho
   
@@ -369,3 +376,191 @@ system.time({
 simres <- do.call('rbind', simres)
 # stop the cluster
 plan(sequential)
+
+
+##*******************************************************************
+## ------------------ Bias and Coverage  ----------------------
+##*******************************************************************
+##
+
+res_variable <- simres %>%
+  group_by(method, n, rho, variables, true_values) %>%
+  summarize(
+    bias     = mean(estimate - true_values, na.rm = TRUE),
+    coverage = mean(covered)*100,
+    mse      = mean((estimate - true_values)^2, na.rm = TRUE),
+    .groups  = "drop"
+  )
+
+# Releveling variables
+method_levels <- c("p-value", "AIC", "BIC", "LASSO Minimum", "LASSO 1 SE", 
+                   "Elastic Net Minimum", "Elastic Net 1 SE")
+res_variable <- res_variable %>%
+  mutate(method = factor(method, levels = method_levels))
+
+# ---------------------------
+# Graph of Bias (Only focusing on Signal Variables)
+# ---------------------------
+grid_labeller <- labeller(
+  n   = as_labeller(function(y) paste0("N = ", y)),
+  rho = as_labeller(function(x) paste0("ρ = ", x))
+)
+
+res_variable %>%
+  filter(true_values != 0) %>%
+  mutate(method = factor(method, levels = method_levels)) %>%
+  ggplot(aes(x = variables, y = method, fill = bias)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(bias, 2)), size = 3) +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_gradient2(
+    low = "#1dbde6",
+    high = "#f20094",
+    midpoint = 0,
+    limits = c(-0.2, 0.2)
+  ) +
+  theme_bw() +
+  labs(x = "Variable", y = "Method", fill = "Bias") +
+  theme(legend.position = "bottom")
+
+
+# ---------------------------
+# Graph of Coverage (Only focusing on Signal Variables)
+# ---------------------------
+res_variable %>%
+  filter(true_values != 0) %>%
+  mutate(method = factor(method, levels = method_levels)) %>%
+  ggplot(aes(x = variables, y = method, fill = coverage)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(coverage, 2)), size = 3) +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_gradient2(
+    low = "#ff0065",
+    mid = "#ffbbcf",
+    high = "white",
+    midpoint = 50,
+    limits = c(20, 100)
+  ) +
+  theme_bw() +
+  labs(x = "Variable", y = "Method", fill = "Coverage (%)") +
+  theme(legend.position = "bottom")
+
+
+##*******************************************************************
+## ------------------ Type I and II Error, FPR, and TPR  ----------------------
+##*******************************************************************
+##
+# Type I and II Error, TPR, and FPR by Variable and Iteration
+type_error_variable <- simres %>%
+  mutate(
+    type1_error = (true_non_zero == 0 & signif == 1),
+    type2_error = (true_non_zero == 1 & signif == 0)
+  )
+
+# Type I and II Error, TPR, and FPR by Method
+type_error_method <- type_error_variable %>%
+  group_by(method, n, rho, iter) %>%
+  summarize(
+    # Among true zero variables, fraction falsely selected
+    type1_error = sum(type1_error) / sum(true_non_zero == 0),
+    # Among true non-zero variables, fraction missed
+    type2_error = sum(type2_error) / sum(true_non_zero == 1),
+    # Among true non-zero variables, fraction correctly selected (power)
+    true_positive_rate = sum(true_non_zero == 1 & signif == 1) / sum(true_non_zero == 1),
+    # Among true zero variables, fraction falsely selected (= type1_error)
+    false_positive_rate = sum(true_non_zero == 0 & signif == 1) / sum(true_non_zero == 0),
+    .groups = "drop"
+  ) %>%
+  group_by(method, n, rho) %>%
+  summarize(
+    type1_error        = mean(type1_error),
+    type2_error        = mean(type2_error),
+    true_positive_rate = mean(true_positive_rate),
+    false_positive_rate = mean(false_positive_rate),
+    .groups = "drop"
+  )
+
+# Releveling variables
+type_error_method <- type_error_method %>%
+  mutate(method = factor(method, levels = method_levels))
+
+# ---------------------------
+# Graph of Type I and II Error
+# ---------------------------
+
+error_plot_dat <- type_error_method %>%
+  pivot_longer(
+    cols = c(type1_error, type2_error),
+    names_to = "error_type",
+    values_to = "rate"
+  )
+
+colors <- brewer.pal(7, "Accent")
+ref_lines <- data.frame(
+  y = c(0.05),
+  line_type = c("Ideal Type I Error")
+)
+
+ggplot(error_plot_dat, aes(x = method, y = rate, fill = error_type)) +
+  geom_col(position = "dodge") +
+  geom_hline(
+    data = ref_lines,
+    aes(yintercept = y, linetype = line_type, color = line_type)) +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_manual(
+    values = colors,
+    labels = c("Type I Error", "Type II Error")) +
+  scale_linetype_manual(
+    values = c("Ideal Type I Error" = "dashed")) +
+  scale_color_manual(
+    values = c("Ideal Type I Error" = "forestgreen")) +
+  theme_light() +
+  labs(
+    x = "Method",
+    y = "Error Rate",
+    fill = NULL,
+    linetype = NULL,
+    color = NULL
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "bottom",
+    strip.text = element_text(color = "black"),
+    strip.background = element_rect(fill = "grey80", color = NA)
+  )
+
+# ---------------------------
+# Graph of TPR and FPR
+# ---------------------------
+
+# True Positive
+ggplot(type_error_method, aes(x = method, y = true_positive_rate, fill = method)) +
+  geom_col(position = "dodge") +
+  geom_hline(aes(yintercept = 1), color = "black", linetype = "dashed") +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_manual(values = colors) +
+  theme_light() +
+  labs(
+    x = "Method",
+    y = "Rate"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none",
+        strip.text = element_text(color = "black"),
+        strip.background = element_rect(fill = "grey80", color = NA))
+
+# False Positive
+ggplot(type_error_method, aes(x = method, y = false_positive_rate, fill = method)) +
+  geom_col(position = "dodge") +
+  geom_hline(aes(yintercept = 0), color = "black", linetype = "dashed") +
+  facet_grid(n ~ rho, labeller = grid_labeller) +
+  scale_fill_manual(values = colors) +
+  theme_light() +
+  labs(
+    x = "Method",
+    y = "Rate"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none",
+        strip.text = element_text(color = "black"),
+        strip.background = element_rect(fill = "grey80", color = NA))
