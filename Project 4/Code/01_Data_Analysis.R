@@ -418,7 +418,7 @@ res_variable %>%
     low = "#1dbde6",
     high = "#f20094",
     midpoint = 0,
-    limits = c(-0.2, 0.2)
+    limits = c(-0.1, 0.1)
   ) +
   theme_bw() +
   labs(x = "Variable", y = "Method", fill = "Bias") +
