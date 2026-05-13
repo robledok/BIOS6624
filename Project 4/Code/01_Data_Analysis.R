@@ -9,6 +9,7 @@ library(forcats)
 library(tidyverse)
 library(ggplot2)
 library(RColorBrewer)
+library(kableExtra)
 
 ##*******************************************************************
 ## ------------------ Results Extraction Function (Carter's Notes) ----------------------
@@ -407,6 +408,7 @@ grid_labeller <- labeller(
   rho = as_labeller(function(x) paste0("ρ = ", x))
 )
 
+# FIGURE 2
 res_variable %>%
   filter(true_values != 0) %>%
   mutate(method = factor(method, levels = method_levels)) %>%
@@ -428,6 +430,8 @@ res_variable %>%
 # ---------------------------
 # Graph of Coverage (Only focusing on Signal Variables)
 # ---------------------------
+
+# FIGURE 3
 res_variable %>%
   filter(true_values != 0) %>%
   mutate(method = factor(method, levels = method_levels)) %>%
@@ -461,6 +465,7 @@ selection_freq <- simres %>%
     true_zero = ifelse(true_values == 0, "Null (β = 0)", "Signal (β ≠ 0)")
   )
 
+# FIGURE 1
 selection_freq %>%
   ggplot(aes(x = variables, y = method, fill = selection_rate)) +
   geom_tile(color = "white") +
@@ -542,6 +547,7 @@ ref_lines <- data.frame(
   line_type = c("Ideal Type I Error")
 )
 
+# FIGURE 4
 ggplot(error_plot_dat, aes(x = method, y = rate, fill = error_type)) +
   geom_col(position = "dodge") +
   geom_hline(
@@ -627,6 +633,7 @@ tp_table <- type_error_method %>%
   ) %>%
   arrange(method)
 
+# TABLE 1
 kable(
   tp_table,
   digits = 2,
@@ -665,6 +672,7 @@ fp_table <- type_error_method %>%
   ) %>%
   arrange(method)
 
+# TABLE 2
 kable(
   fp_table,
   digits = 2,
