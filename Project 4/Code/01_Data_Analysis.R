@@ -374,9 +374,11 @@ system.time({
   ,future.seed=TRUE)
 })
 simres <- do.call('rbind', simres)
-# stop the cluster
+# Stop the cluster
 plan(sequential)
 
+# Saving data so I don't have to keep rerunning
+saveRDS(simres, "DataProcessed/simulation_results")
 
 ##*******************************************************************
 ## ------------------ Bias and Coverage  ----------------------
@@ -386,7 +388,7 @@ plan(sequential)
 res_variable <- simres %>%
   group_by(method, n, rho, variables, true_values) %>%
   summarize(
-    bias     = mean(estimate - true_values, na.rm = TRUE),
+    bias     =  mean(ifelse(is.na(estimate), 0, estimate) - true_values),
     coverage = mean(covered)*100,
     .groups  = "drop"
   )
@@ -485,32 +487,36 @@ selection_freq %>%
 ## ------------------ Type I and II Error, FPR, and TPR  ----------------------
 ##*******************************************************************
 ##
-# Type I and II Error, TPR, and FPR by Variable and Iteration
+# Type I and II Error, TPR, and FPR by Variable
 type_error_variable <- simres %>%
   mutate(
-    type1_error = (true_non_zero == 0 & signif == 1),
-    type2_error = (true_non_zero == 1 & signif == 0)
+    # Type I error: null variable selected AND significant
+    type1_error = (true_non_zero == 0 & selected == 1 & signif == 1),
+    # Type II error: signal variable not selected OR not significant
+    type2_error = (true_non_zero == 1 & (selected == 0 | signif == 0)),
+    # TPR and FPR — selection only
+    true_pos = (true_non_zero == 1 & selected == 1),
+    false_pos = (true_non_zero == 0 & selected == 1),
   )
-
 # Type I and II Error, TPR, and FPR by Method
 type_error_method <- type_error_variable %>%
   group_by(method, n, rho, iter) %>%
   summarize(
-    # Among true zero variables, fraction falsely selected
+    # Type I: selected AND significant null vars / all null vars
     type1_error = sum(type1_error) / sum(true_non_zero == 0),
-    # Among true non-zero variables, fraction missed
+    # Type II: not selected OR not significant signal vars / all signal vars
     type2_error = sum(type2_error) / sum(true_non_zero == 1),
-    # Among true non-zero variables, fraction correctly selected (power)
-    true_positive_rate = sum(true_non_zero == 1 & signif == 1) / sum(true_non_zero == 1),
-    # Among true zero variables, fraction falsely selected (= type1_error)
-    false_positive_rate = sum(true_non_zero == 0 & signif == 1) / sum(true_non_zero == 0),
+    # TPR/sensitivity: selected signal vars / all signal vars (selection only)
+    true_positive_rate  = sum(true_pos) / sum(true_non_zero == 1),
+    # FPR: selected null vars / all null vars (selection only)
+    false_positive_rate = sum(false_pos) / sum(true_non_zero == 0),
     .groups = "drop"
   ) %>%
   group_by(method, n, rho) %>%
   summarize(
-    type1_error        = mean(type1_error),
-    type2_error        = mean(type2_error),
-    true_positive_rate = mean(true_positive_rate),
+    type1_error         = mean(type1_error),
+    type2_error         = mean(type2_error),
+    true_positive_rate  = mean(true_positive_rate),
     false_positive_rate = mean(false_positive_rate),
     .groups = "drop"
   )
@@ -588,7 +594,7 @@ ggplot(type_error_method, aes(x = method, y = true_positive_rate, fill = method)
 ggplot(type_error_method, aes(x = method, y = false_positive_rate, fill = method)) +
   geom_col(position = "dodge") +
   geom_hline(aes(yintercept = 0), color = "black", linetype = "dashed") +
-  ylim(0, 0.1) +
+  ylim(0, 1) +
   facet_grid(n ~ rho, labeller = grid_labeller) +
   scale_fill_manual(values = colors) +
   theme_light() +
