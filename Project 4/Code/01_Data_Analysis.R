@@ -342,7 +342,7 @@ run_sims <- function(scenario){
   # Create an empty list to store results
   res <- list()
   # Repeat the simulation 1000 times
-  for(iter in 1:1000) {
+  for(iter in 1:7500) {
     # Run one simulation
     tmp <- simulate_func(
       n   = scenario$n,
@@ -588,6 +588,7 @@ ggplot(type_error_method, aes(x = method, y = true_positive_rate, fill = method)
 ggplot(type_error_method, aes(x = method, y = false_positive_rate, fill = method)) +
   geom_col(position = "dodge") +
   geom_hline(aes(yintercept = 0), color = "black", linetype = "dashed") +
+  ylim(0, 0.1) +
   facet_grid(n ~ rho, labeller = grid_labeller) +
   scale_fill_manual(values = colors) +
   theme_light() +
