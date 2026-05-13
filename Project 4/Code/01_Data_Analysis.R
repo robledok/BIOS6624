@@ -606,3 +606,83 @@ ggplot(type_error_method, aes(x = method, y = false_positive_rate, fill = method
         legend.position = "none",
         strip.text = element_text(color = "black"),
         strip.background = element_rect(fill = "grey80", color = NA))
+
+# ---------------------------
+# Table of TPR and FPR
+# ---------------------------
+
+# TP Table (Used ChatGPT to help)
+tp_table <- type_error_method %>%
+  select(method, n, rho, true_positive_rate) %>%
+  mutate(
+    rho = factor(rho, levels = sort(unique(rho))),
+    n = factor(n, levels = sort(unique(n)))
+  ) %>%
+  arrange(rho, n) %>%
+  pivot_wider(
+    names_from = c(rho, n),
+    values_from = true_positive_rate,
+    names_glue = "rho={rho}_n={n}",
+    names_sort = TRUE
+  ) %>%
+  arrange(method)
+
+kable(
+  tp_table,
+  digits = 2,
+  align = 'lcccccc',
+  caption = c("<b>Table 1.</b> True Positive Rates by Method, Sample Size, and Correlation."),
+  booktabs = TRUE,
+  col.names = c("Method", "N = 250", "N = 500", "N = 250", "N = 500", "N = 250", "N = 500")
+) %>%
+  add_header_above(c(
+    " " = 1,
+    "$\\rho$ = 0" = 2,
+    "$\\rho$ = 0.35" = 2,
+    "$\\rho$ = 0.75" = 2
+  )) %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  kable_styling(bootstrap_options = "condensed") %>%
+  row_spec(0, bold = T) %>%
+  footnote(
+    general = "True positive rate is defined in Section 2.4 as the proportion of signal variables selected into the model, with a desired value of 1, averaged across all 7,500 replicates.",
+    general_title = ""
+  )
+
+# FP Table (Used ChatGPT to help)
+fp_table <- type_error_method %>%
+  select(method, n, rho, false_positive_rate) %>%
+  mutate(
+    rho = factor(rho, levels = sort(unique(rho))),
+    n = factor(n, levels = sort(unique(n)))
+  ) %>%
+  arrange(rho, n) %>%
+  pivot_wider(
+    names_from = c(rho, n),
+    values_from = false_positive_rate,
+    names_glue = "rho={rho}_n={n}",
+    names_sort = TRUE
+  ) %>%
+  arrange(method)
+
+kable(
+  fp_table,
+  digits = 2,
+  align = 'lcccccc',
+  caption = c("<b>Table 2.</b> False Positive Rates by Method, Sample Size, and Correlation."),
+  booktabs = TRUE,
+  col.names = c("Method", "N = 250", "N = 500", "N = 250", "N = 500", "N = 250", "N = 500")
+) %>%
+  add_header_above(c(
+    " " = 1,
+    "$\\rho$ = 0" = 2,
+    "$\\rho$ = 0.35" = 2,
+    "$\\rho$ = 0.75" = 2
+  )) %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  kable_styling(bootstrap_options = "condensed") %>%
+  row_spec(0, bold = T) %>%
+  footnote(
+    general = "False positive rate is defined in Section 2.4 as the proportion of null variables selected into the model, with a desired value of 0, averaged across all 7,500 replicates.",
+    general_title = ""
+  )
